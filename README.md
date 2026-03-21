@@ -1,20 +1,33 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# PREPAI - AI Placement Preparation Platform 🚀
 
-# Run and deploy your AI Studio app
+## 🔥 Features
 
-This contains everything you need to run your app locally.
+- AI-generated MCQ tests (Numerical, Logical, Verbal)
+- Coding practice with execution
+- Analytics dashboard (performance, ranking, trends)
+- Answer review system
+- Secure authentication
 
-View your app in AI Studio: https://ai.studio/apps/f4b1fa59-da4e-4d99-98c4-f81ba15639f2
+## 🧠 Tech Stack
 
-## Run Locally
+- Frontend: React + Tailwind + Framer Motion
+- Backend: Node.js + Express
+- Database: PostgreSQL
+- AI: Gemini API
 
-**Prerequisites:**  Node.js
+## 📊 Key Highlights
 
+- Section-wise performance analytics
+- Global ranking system
+- Weak topic detection
+- Time-based performance tracking
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## 🚀 Future Improvements
+
+- Leaderboard system
+- AI mentor chatbot
+- Resume-based question generation
+
+## 👨‍💻 Author
+
+Ankur Yadav
