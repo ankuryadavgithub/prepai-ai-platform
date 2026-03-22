@@ -1,8 +1,56 @@
+import axios from "axios";
+
+const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+
+const callGroq = async (prompt: string) => {
+  try {
+    const res = await axios.post(
+      GROQ_URL,
+      {
+        model: "openai/gpt-oss-120b",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are an expert aptitude and coding question generator. ALWAYS return clean JSON only."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        temperature: 0.6,
+        max_tokens: 2000
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        timeout: 15000
+      }
+    );
+
+    const content = res?.data?.choices?.[0]?.message?.content;
+
+    if (!content) {
+      throw new Error("Empty AI response");
+    }
+
+    return content;
+
+  } catch (err: any) {
+    console.log("🔥 GROQ ERROR:", err.response?.data || err.message);
+    throw err;
+  }
+};
+
+// ================= MCQ =================
 export const generateMCQ = async (
   category: string,
   topic: string,
   difficulty: string,
-  retry = 0 // 🔥 prevent infinite loop
+  retry = 0
 ) => {
   const prompt = `
 You are an expert aptitude trainer.
@@ -34,19 +82,12 @@ Format:
 `;
 
   try {
-    const response = await (window as any).puter.ai.chat(prompt, {
-      model: "gemini-3-flash-preview"
-    });
+    let text = await callGroq(prompt);
 
-    let text =
-      typeof response === "string"
-        ? response
-        : response?.message?.content || "";
-
-    // 🔥 CLEAN MARKDOWN
+    // 🔥 CLEAN
     text = text.replace(/```json/g, "").replace(/```/g, "").trim();
 
-    // 🔥 EXTRACT ARRAY SAFELY
+    // 🔥 EXTRACT ARRAY
     const start = text.indexOf("[");
     const end = text.lastIndexOf("]");
 
@@ -58,12 +99,9 @@ Format:
 
     let data = JSON.parse(text);
 
-    // 🔥 ENSURE ARRAY
-    if (!Array.isArray(data)) {
-      data = [data];
-    }
+    if (!Array.isArray(data)) data = [data];
 
-    // 🔥 BASIC VALIDATION
+    // 🔥 VALIDATION
     const valid = data.filter(
       (q: any) =>
         q?.question &&
@@ -73,7 +111,7 @@ Format:
         q.explanation
     );
 
-    // 🔥 TOPIC VALIDATION (IMPORTANT FIX)
+    // 🔥 TOPIC FILTER
     const keywords = topicKeywords[topic] || [];
 
     const strictValid = valid.filter((q: any) =>
@@ -83,17 +121,12 @@ Format:
     );
 
     // 🔥 FINAL LOGIC
-    if (strictValid.length >= 7) {
-      return strictValid.slice(0, 10);
-    }
+    if (strictValid.length >= 7) return strictValid.slice(0, 10);
+    if (valid.length >= 7) return valid.slice(0, 10);
 
-    if (valid.length >= 7) {
-      return valid.slice(0, 10);
-    }
-
-    // 🔁 SAFE RETRY (MAX 2 TIMES)
+    // 🔁 RETRY SAFE
     if (retry < 2) {
-      console.log("Retrying MCQ generation...");
+      console.log("Retrying MCQ...");
       return await generateMCQ(category, topic, difficulty, retry + 1);
     }
 
@@ -106,24 +139,22 @@ Format:
 };
 
 
-
-// 🔥 COMPLETE KEYWORDS MAP
+// ================= KEYWORDS =================
 const topicKeywords: any = {
-  // NUMERICAL
   "Percentage": ["%", "percent", "increase", "decrease"],
   "Number System": ["divisible", "remainder", "integer"],
   "Arithmetic": ["sum", "difference"],
   "Data Interpretation": ["table", "chart", "graph"],
   "Geometry & Mensuration": ["area", "volume", "perimeter"],
-  "Profit & Loss": ["profit", "loss", "selling"],
-  "Ratio & Proportion": ["ratio", "proportion"],
-  "Time & Work": ["work", "days", "efficiency"],
-  "Simplification": ["simplify", "expression"],
+  "Profit & Loss": ["profit", "loss"],
+  "Ratio & Proportion": ["ratio"],
+  "Time & Work": ["work", "days"],
+  "Simplification": ["simplify"],
   "Speed, Time & Distance": ["speed", "distance"],
   "LCM & HCF": ["lcm", "hcf"],
-  "Linear Equation": ["equation", "solve"],
+  "Linear Equation": ["equation"],
   "Mixture & Alligation": ["mixture"],
-  "Permutation & Combination": ["permutation", "combination"],
+  "Permutation & Combination": ["permutation"],
   "Simple & Compound Interest": ["interest"],
   "Average": ["average"],
   "Divisibility Rules": ["divisible"],
@@ -132,44 +163,43 @@ const topicKeywords: any = {
   "Age Problems": ["age"],
   "Train Problems": ["train"],
 
-  // LOGICAL
-  "Logical Deduction": ["conclusion", "assumption"],
-  "Letter & Number Series": ["series", "missing"],
+  "Logical Deduction": ["conclusion"],
+  "Letter & Number Series": ["series"],
   "Data Sufficiency": ["statement"],
   "Pattern Recognition": ["pattern"],
   "Syllogism": ["all", "some"],
-  "Blood Relation": ["father", "mother"],
+  "Blood Relation": ["father"],
   "Data Arrangement": ["arrange"],
   "Visual Reasoning": ["figure"],
   "Spatial Reasoning": ["direction"],
   "Attention to Detail": ["match"],
   "Venn Diagrams": ["venn"],
-  "Calendar": ["day", "date"],
+  "Calendar": ["day"],
   "Coding-Decoding": ["code"],
-  "Directions": ["north", "south"],
+  "Directions": ["north"],
   "Seating Arrangement": ["sitting"],
 
-  // VERBAL
   "Reading Comprehension": ["passage"],
   "Cloze Test": ["blank"],
   "Error Spotting": ["error"],
   "Sentence Completion": ["complete"],
-  "Synonyms & Antonyms": ["similar", "opposite"],
+  "Synonyms & Antonyms": ["similar"],
   "Vocabulary": ["meaning"],
   "Para Jumbles": ["arrange"],
   "Grammar": ["grammar"],
-  "Tense": ["past", "present"],
-  "Articles, Prepositions, Conjunctions": ["a", "an", "the"],
+  "Tense": ["past"],
+  "Articles, Prepositions, Conjunctions": ["the"],
   "Subject-Verb Agreement": ["verb"]
 };
 
 
-
-// 🔥 CODING (FIXED SAFE PARSER)
-export const generateCodingProblem = async (difficulty: string) => {
-  try {
-    const response = await (window as any).puter.ai.chat(
-      `Generate ONE ${difficulty} coding problem.
+// ================= CODING =================
+export const generateCodingProblem = async (
+  difficulty: string,
+  retry = 0
+) => {
+  const prompt = `
+Generate ONE ${difficulty} coding problem.
 
 Return ONLY JSON:
 {
@@ -178,31 +208,35 @@ Return ONLY JSON:
   "output": "",
   "constraints": "",
   "solution": ""
-}`,
-      { model: "gemini-3-flash-preview" }
-    );
+}
+`;
 
-    let text =
-      typeof response === "string"
-        ? response
-        : response?.message?.content || "";
+  try {
+    let text = await callGroq(prompt);
 
     text = text.replace(/```json/g, "").replace(/```/g, "").trim();
 
-    // 🔥 EXTRACT JSON OBJECT SAFELY
     const start = text.indexOf("{");
     const end = text.lastIndexOf("}");
 
     if (start === -1 || end === -1) {
-      throw new Error("Invalid coding JSON");
+      throw new Error("Invalid JSON");
     }
 
-    text = text.substring(start, end + 1);
+    const data = JSON.parse(text.substring(start, end + 1));
 
-    return JSON.parse(text);
+    if (!data.problem) throw new Error("Invalid structure");
+
+    return data;
 
   } catch (err) {
     console.log("CODING ERROR:", err);
+
+    if (retry < 2) {
+      console.log("Retrying Coding Problem...");
+      return await generateCodingProblem(difficulty, retry + 1);
+    }
+
     return null;
   }
 };
