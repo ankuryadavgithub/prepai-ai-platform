@@ -4,7 +4,12 @@ import type {
   CodingSubmissionResult,
   DashboardData,
   Difficulty,
+  InterviewSession,
+  InterviewSetup,
   MCQQuestion,
+  MockMode,
+  MockSession,
+  MockTrack,
   PracticeMode,
   User,
 } from "../types";
@@ -75,5 +80,40 @@ export const codingApi = {
     request<CodingSubmissionResult>("/api/code/submit", {
       method: "POST",
       body: JSON.stringify(payload),
+    }, true),
+};
+
+export const mockApi = {
+  tracks: () => request<MockTrack[]>("/api/mock/tracks", undefined, true),
+  active: () => request<{ session: MockSession | null }>("/api/mock/sessions/active", undefined, true),
+  history: () => request<{ sessions: MockSession[] }>("/api/mock/sessions/history", undefined, true),
+  start: (payload: { trackId: string; mode: MockMode }) =>
+    request<{ session: MockSession }>("/api/mock/sessions/start", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }, true),
+  completeRound: (sessionId: number, roundKey: string, payload: { score: number; maxScore?: number; accuracy?: number; summary?: string }) =>
+    request<{ session: MockSession }>(`/api/mock/sessions/${sessionId}/rounds/${roundKey}/complete`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }, true),
+};
+
+export const interviewApi = {
+  active: () => request<{ session: InterviewSession | null }>("/api/interview/sessions/active", undefined, true),
+  history: () => request<{ sessions: InterviewSession[] }>("/api/interview/sessions/history", undefined, true),
+  start: (payload: InterviewSetup) =>
+    request<{ session: InterviewSession }>("/api/interview/sessions/start", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }, true),
+  answer: (sessionId: number, payload: { answer: string; responseTime: number }) =>
+    request<{ session: InterviewSession; completed: boolean; answerFeedback: string }>(`/api/interview/sessions/${sessionId}/answer`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }, true),
+  finish: (sessionId: number) =>
+    request<{ session: InterviewSession }>(`/api/interview/sessions/${sessionId}/finish`, {
+      method: "POST",
     }, true),
 };

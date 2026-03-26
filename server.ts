@@ -6,6 +6,8 @@ import authRoutes from "./server/routes/authRoutes.js";
 import codeRoutes from "./server/routes/codeRoutes.js";
 import analyticsRoutes from "./server/routes/analytics.js";
 import practiceRoutes from "./server/routes/practiceRoutes.js";
+import mockRoutes from "./server/routes/mockRoutes.js";
+import interviewRoutes from "./server/routes/interviewRoutes.js";
 import { initDatabase } from "./server/db.js";
 
 dotenv.config();
@@ -22,6 +24,8 @@ async function startServer() {
   app.use("/api/code", codeRoutes);
   app.use("/api/analytics", analyticsRoutes);
   app.use("/api/test", testRoutes);
+  app.use("/api/mock", mockRoutes);
+  app.use("/api/interview", interviewRoutes);
 
   const vite = await createViteServer({
     server: { middlewareMode: true },

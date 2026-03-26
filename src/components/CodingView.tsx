@@ -3,6 +3,9 @@ import type { CodingProblem, CodingSubmissionResult, Difficulty } from "../types
 
 type CodingViewProps = {
   difficulty: Difficulty;
+  presetLabel: string;
+  submissionCount: number;
+  timerLabel: string;
   language: string;
   problem: CodingProblem | null;
   result: CodingSubmissionResult | null;
@@ -18,6 +21,9 @@ type CodingViewProps = {
 
 export default function CodingView({
   difficulty,
+  presetLabel,
+  submissionCount,
+  timerLabel,
   language,
   problem,
   result,
@@ -33,6 +39,18 @@ export default function CodingView({
   return (
     <div className="space-y-6">
       <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+        <div className="mb-4 grid gap-4 md:grid-cols-3">
+          {[
+            ["Preset", presetLabel],
+            ["Submissions this round", `${submissionCount}`],
+            ["Round timer", timerLabel],
+          ].map(([label, value]) => (
+            <div key={label} className="rounded-2xl border border-white/8 bg-black/20 p-4">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{label}</p>
+              <p className="mt-2 text-base font-medium text-white">{value}</p>
+            </div>
+          ))}
+        </div>
         <div className="grid gap-4 lg:grid-cols-[220px_220px_auto_auto]">
           <select
             value={difficulty}

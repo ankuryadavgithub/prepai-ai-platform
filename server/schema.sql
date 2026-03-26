@@ -58,3 +58,80 @@ CREATE TABLE coding_submissions (
   total_hidden INTEGER DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE mock_sessions (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  track_id VARCHAR(50) NOT NULL,
+  track_name VARCHAR(100) NOT NULL,
+  mode VARCHAR(20) NOT NULL,
+  status VARCHAR(20) DEFAULT 'active',
+  readiness_score FLOAT DEFAULT 0,
+  passed BOOLEAN DEFAULT FALSE,
+  strongest_round VARCHAR(100),
+  weakest_round VARCHAR(100),
+  next_priority TEXT,
+  recommended_follow_up TEXT,
+  started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  completed_at TIMESTAMP
+);
+
+CREATE TABLE mock_round_results (
+  id SERIAL PRIMARY KEY,
+  session_id INTEGER REFERENCES mock_sessions(id) ON DELETE CASCADE,
+  round_key VARCHAR(50) NOT NULL,
+  round_label VARCHAR(120) NOT NULL,
+  round_type VARCHAR(20) NOT NULL,
+  section VARCHAR(50),
+  topic VARCHAR(100),
+  difficulty VARCHAR(20),
+  time_limit INTEGER DEFAULT 0,
+  cutoff_score FLOAT DEFAULT 0,
+  status VARCHAR(20) DEFAULT 'pending',
+  score FLOAT DEFAULT 0,
+  max_score FLOAT DEFAULT 100,
+  accuracy FLOAT DEFAULT 0,
+  summary TEXT,
+  completed_at TIMESTAMP
+);
+
+CREATE TABLE interview_sessions (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  interview_type VARCHAR(20) NOT NULL,
+  target_role VARCHAR(100) NOT NULL,
+  focus_area VARCHAR(120),
+  resume_summary TEXT,
+  projects TEXT,
+  internships TEXT,
+  achievements TEXT,
+  status VARCHAR(20) DEFAULT 'active',
+  active_turn INTEGER DEFAULT 0,
+  personas JSONB DEFAULT '[]'::jsonb,
+  overall_score FLOAT DEFAULT 0,
+  readiness_score FLOAT DEFAULT 0,
+  recommendation TEXT,
+  final_summary JSONB DEFAULT '{}'::jsonb,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  completed_at TIMESTAMP
+);
+
+CREATE TABLE interview_turns (
+  id SERIAL PRIMARY KEY,
+  session_id INTEGER REFERENCES interview_sessions(id) ON DELETE CASCADE,
+  turn_index INTEGER NOT NULL,
+  interviewer_id VARCHAR(50),
+  interviewer_name VARCHAR(100),
+  interviewer_style VARCHAR(100),
+  question TEXT NOT NULL,
+  candidate_answer TEXT,
+  followup_reason TEXT,
+  relevance FLOAT DEFAULT 0,
+  clarity FLOAT DEFAULT 0,
+  correctness FLOAT DEFAULT 0,
+  structure FLOAT DEFAULT 0,
+  confidence FLOAT DEFAULT 0,
+  followup_handling FLOAT DEFAULT 0,
+  response_time INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

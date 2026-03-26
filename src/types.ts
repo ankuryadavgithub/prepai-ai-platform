@@ -24,9 +24,11 @@ export const TOPICS = {
 } as const;
 
 export type PracticeSection = keyof typeof TOPICS;
-export type AppSection = "dashboard" | "practice" | "coding" | "analytics" | "profile";
+export type AppSection = "dashboard" | "mock" | "practice" | "coding" | "interview" | "analytics" | "profile";
 export type Difficulty = "Easy" | "Medium" | "Hard";
 export type PracticeMode = "practice" | "timed";
+export type MockMode = "aptitude" | "coding" | "full";
+export type InterviewType = "HR" | "Technical" | "Panel";
 
 export interface User {
   id: number;
@@ -105,6 +107,19 @@ export interface DashboardData {
     accuracy: number;
     avg_score: number;
   };
+  readiness: ReadinessSummary;
+  nextRecommendedTrack: {
+    type: "mock" | "interview";
+    label: string;
+    reason: string;
+  };
+  recentMocks: RecentMockSummary[];
+  interviewAnalytics: InterviewAnalyticsSummary;
+  weeklyTarget: {
+    target: number;
+    completed: number;
+  };
+  milestones: string[];
 }
 
 export interface SectionPerformance {
@@ -186,7 +201,48 @@ export interface AnalyticsData {
   recommendation: Recommendation;
   streak: number;
   latestSummary: LatestSummary | null;
+  readiness: ReadinessSummary;
+  nextRecommendedTrack: {
+    type: "mock" | "interview";
+    label: string;
+    reason: string;
+  };
+  recentMocks: RecentMockSummary[];
+  interviewAnalytics: InterviewAnalyticsSummary;
+  weeklyTarget: {
+    target: number;
+    completed: number;
+  };
+  milestones: string[];
   codingStats: CodingStats;
+}
+
+export interface ReadinessSummary {
+  readinessScore: number;
+  strongestRoundType: string;
+  weakestRoundType: string;
+  aptitudeReadiness: number;
+  codingReadiness: number;
+  interviewReadiness: number;
+  mockReadiness: number;
+  interviewStatus: string;
+}
+
+export interface RecentMockSummary {
+  track_name: string;
+  mode: MockMode;
+  readiness_score: number;
+  passed: boolean;
+  strongest_round: string | null;
+  weakest_round: string | null;
+  completed_at: string;
+}
+
+export interface InterviewAnalyticsSummary {
+  completedInterviews: number;
+  avgScore: number;
+  latestCompletion: string | null;
+  recentThemes: string[];
 }
 
 export interface CodingProblem {
@@ -225,4 +281,112 @@ export interface CodingSubmissionResult {
     error?: string;
   }>;
   feedback: string;
+}
+
+export interface MockTrack {
+  id: string;
+  name: string;
+  description: string;
+  target: string;
+  modes: MockMode[];
+  rounds: MockRound[];
+}
+
+export interface MockRound {
+  id?: number;
+  roundKey: string;
+  roundLabel: string;
+  roundType: "aptitude" | "coding";
+  section: string | null;
+  topic: string | null;
+  difficulty: Difficulty;
+  timeLimit: number;
+  cutoffScore: number;
+  status?: "pending" | "completed";
+  score?: number;
+  maxScore?: number;
+  accuracy?: number;
+  summary?: string | null;
+  completedAt?: string | null;
+}
+
+export interface MockSession {
+  id: number;
+  trackId: string;
+  trackName: string;
+  mode: MockMode;
+  status: string;
+  readinessScore: number;
+  passed: boolean;
+  strongestRound: string | null;
+  weakestRound: string | null;
+  nextPriority: string | null;
+  recommendedFollowUp: string | null;
+  startedAt: string;
+  completedAt: string | null;
+  rounds: MockRound[];
+}
+
+export interface InterviewSetup {
+  interviewType: InterviewType;
+  targetRole: string;
+  focusArea: string;
+  resumeSummary: string;
+  projects: string;
+  internships: string;
+  achievements: string;
+}
+
+export interface InterviewTurn {
+  id: number;
+  turnIndex: number;
+  interviewerId: string;
+  interviewerName: string;
+  interviewerStyle: string;
+  question: string;
+  candidateAnswer?: string | null;
+  followupReason?: string | null;
+  evaluation: {
+    relevance: number;
+    clarity: number;
+    correctness: number;
+    structure: number;
+    confidence: number;
+    followupHandling: number;
+  };
+  responseTime: number;
+  createdAt: string;
+}
+
+export interface InterviewSession {
+  id: number;
+  interviewType: InterviewType;
+  targetRole: string;
+  focusArea?: string | null;
+  resumeSummary?: string | null;
+  projects?: string | null;
+  internships?: string | null;
+  achievements?: string | null;
+  status: string;
+  activeTurn: number;
+  personas: Array<{
+    id: string;
+    name: string;
+    style: string;
+    specialty: string;
+  }>;
+  overallScore: number;
+  readinessScore: number;
+  recommendation?: string | null;
+  finalSummary: {
+    averages?: Record<string, number>;
+    strengths?: string[];
+    weakSignals?: string[];
+    expectedBetterAnswer?: string;
+    answerRewrite?: string;
+    hiringSummary?: string;
+  };
+  createdAt: string;
+  completedAt?: string | null;
+  transcript: InterviewTurn[];
 }

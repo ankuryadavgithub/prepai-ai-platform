@@ -47,16 +47,52 @@ export default function DashboardView({ data, loading, onStartRecommendation }: 
 
         <div className="grid gap-4">
           {[
+            ["Readiness score", `${data.readiness.readinessScore}`],
             ["Practice streak", `${data.streak} day${data.streak === 1 ? "" : "s"}`],
             ["Completed tests", `${data.overall.tests}`],
-            ["Overall accuracy", formatPercent(data.overall.accuracy)],
-            ["Average score", data.overall.avg_score.toFixed(1)],
+            ["Interview readiness", `${data.readiness.interviewReadiness}`],
           ].map(([label, value]) => (
             <div key={label} className="rounded-[24px] border border-white/10 bg-white/5 p-5">
               <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{label}</p>
               <h3 className="mt-3 text-2xl font-semibold text-white">{value}</h3>
             </div>
           ))}
+        </div>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+          <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Readiness board</h3>
+          <div className="mt-5 grid gap-3 md:grid-cols-2">
+            {[
+              ["Strongest round", data.readiness.strongestRoundType],
+              ["Weakest round", data.readiness.weakestRoundType],
+              ["Next track", data.nextRecommendedTrack.label],
+              ["Weekly target", `${data.weeklyTarget.completed}/${data.weeklyTarget.target}`],
+            ].map(([label, value]) => (
+              <div key={label} className="rounded-2xl border border-white/8 bg-black/20 p-4">
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{label}</p>
+                <p className="mt-2 text-base font-medium text-white capitalize">{value}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-5 rounded-2xl border border-white/8 bg-black/20 p-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Interview status</p>
+            <p className="mt-2 text-sm leading-7 text-slate-300">{data.readiness.interviewStatus}</p>
+          </div>
+        </div>
+
+        <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+          <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Coach insights</h3>
+          <div className="mt-5 space-y-3">
+            {data.insights.length ? data.insights.map((insight) => (
+              <div key={insight} className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-sm leading-7 text-slate-300">
+                {insight}
+              </div>
+            )) : (
+              <p className="text-sm text-slate-400">Insights appear after you build some practice history.</p>
+            )}
+          </div>
         </div>
       </div>
 
@@ -75,14 +111,14 @@ export default function DashboardView({ data, loading, onStartRecommendation }: 
         </div>
 
         <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
-          <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Coach insights</h3>
+          <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Momentum</h3>
           <div className="mt-5 space-y-3">
-            {data.insights.length ? data.insights.map((insight) => (
-              <div key={insight} className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-sm leading-7 text-slate-300">
-                {insight}
+            {data.milestones.length ? data.milestones.map((milestone) => (
+              <div key={milestone} className="rounded-2xl border border-emerald-300/15 bg-emerald-300/10 px-4 py-3 text-sm leading-7 text-emerald-50">
+                {milestone}
               </div>
             )) : (
-              <p className="text-sm text-slate-400">Insights appear after you build some practice history.</p>
+              <p className="text-sm text-slate-400">Milestones will appear as your mock, interview, and practice history grows.</p>
             )}
           </div>
         </div>

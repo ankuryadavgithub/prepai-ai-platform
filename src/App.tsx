@@ -3,9 +3,11 @@ import Auth from "./Auth";
 import AnalyticsView from "./components/AnalyticsView";
 import CodingView from "./components/CodingView";
 import DashboardView from "./components/DashboardView";
+import InterviewView from "./components/InterviewView";
+import MockView from "./components/MockView";
 import PracticeView from "./components/PracticeView";
 import ProfileView from "./components/ProfileView";
-import { analyticsApi, authApi, codingApi, practiceApi } from "./services/gemini";
+import { analyticsApi, authApi, codingApi, interviewApi, mockApi, practiceApi } from "./services/gemini";
 import {
   TOPICS,
   type MCQQuestion,
@@ -15,6 +17,11 @@ import {
   type CodingSubmissionResult,
   type DashboardData,
   type Difficulty,
+  type InterviewSession,
+  type InterviewSetup,
+  type MockMode,
+  type MockSession,
+  type MockTrack,
   type PracticeConfig,
   type PracticeSection,
   type User,
@@ -28,10 +35,22 @@ const defaultPracticeConfig: PracticeConfig = {
   mode: "practice",
 };
 
+const defaultInterviewSetup: InterviewSetup = {
+  interviewType: "HR",
+  targetRole: "Software Engineer",
+  focusArea: "",
+  resumeSummary: "",
+  projects: "",
+  internships: "",
+  achievements: "",
+};
+
 const navigationItems: Array<{ id: AppSection; label: string }> = [
   { id: "dashboard", label: "Dashboard" },
+  { id: "mock", label: "Mock Tracks" },
   { id: "practice", label: "Practice" },
   { id: "coding", label: "Coding" },
+  { id: "interview", label: "Interview" },
   { id: "analytics", label: "Analytics" },
   { id: "profile", label: "Profile" },
 ];
@@ -48,6 +67,12 @@ export default function App() {
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [mockTracks, setMockTracks] = useState<MockTrack[]>([]);
+  const [activeMockSession, setActiveMockSession] = useState<MockSession | null>(null);
+  const [mockHistory, setMockHistory] = useState<MockSession[]>([]);
+  const [mockLoading, setMockLoading] = useState(false);
+  const [mockError, setMockError] = useState("");
+  const [pendingMockRound, setPendingMockRound] = useState<{ sessionId: number; roundKey: string } | null>(null);
 
   const [practiceConfig, setPracticeConfig] = useState<PracticeConfig>(defaultPracticeConfig);
   const [practiceQuestions, setPracticeQuestions] = useState<MCQQuestion[]>([]);
@@ -60,26 +85,47 @@ export default function App() {
   const [practiceFeedback, setPracticeFeedback] = useState<ReturnType<typeof buildPracticeFeedback> | null>(null);
 
   const [codingDifficulty, setCodingDifficulty] = useState<Difficulty>("Medium");
+  const [codingPresetLabel, setCodingPresetLabel] = useState("Assessment preset");
+  const [codingTimerLabel, setCodingTimerLabel] = useState("35 min");
+  const [codingSubmissionCount, setCodingSubmissionCount] = useState(0);
   const [codingLanguage, setCodingLanguage] = useState("javascript");
   const [codingProblem, setCodingProblem] = useState<CodingProblem | null>(null);
   const [codingCode, setCodingCode] = useState("");
   const [codingResult, setCodingResult] = useState<CodingSubmissionResult | null>(null);
   const [codingLoading, setCodingLoading] = useState(false);
   const [codingError, setCodingError] = useState("");
+  const [interviewSetup, setInterviewSetup] = useState<InterviewSetup>(defaultInterviewSetup);
+  const [activeInterviewSession, setActiveInterviewSession] = useState<InterviewSession | null>(null);
+  const [interviewHistory, setInterviewHistory] = useState<InterviewSession[]>([]);
+  const [interviewDraftAnswer, setInterviewDraftAnswer] = useState("");
+  const [interviewAnswerFeedback, setInterviewAnswerFeedback] = useState("");
+  const [interviewLoading, setInterviewLoading] = useState(false);
+  const [interviewError, setInterviewError] = useState("");
 
   const questionStartRef = useRef<number | null>(null);
   const sessionStartedAtRef = useRef<number | null>(null);
   const codingStartedAtRef = useRef<number | null>(null);
+  const interviewTurnStartedAtRef = useRef<number | null>(null);
 
   async function refreshAnalytics() {
     try {
       setAnalyticsLoading(true);
-      const [dashboardData, analyticsData] = await Promise.all([
+      const [dashboardData, analyticsData, tracksResponse, activeMockResponse, mockHistoryResponse, activeInterviewResponse, interviewHistoryResponse] = await Promise.all([
         analyticsApi.dashboard(),
         analyticsApi.full(),
+        mockApi.tracks(),
+        mockApi.active(),
+        mockApi.history(),
+        interviewApi.active(),
+        interviewApi.history(),
       ]);
       setDashboard(dashboardData);
       setAnalytics(analyticsData);
+      setMockTracks(tracksResponse);
+      setActiveMockSession(activeMockResponse.session);
+      setMockHistory(mockHistoryResponse.sessions);
+      setActiveInterviewSession(activeInterviewResponse.session);
+      setInterviewHistory(interviewHistoryResponse.sessions);
     } catch (err) {
       console.error("Analytics refresh failed", err);
     } finally {
@@ -154,6 +200,16 @@ export default function App() {
     questionStartRef.current = null;
   }
 
+  function applyCodingPreset(label: string, difficulty: Difficulty, timeLimit: number) {
+    setCodingPresetLabel(label);
+    setCodingDifficulty(difficulty);
+    setCodingTimerLabel(`${timeLimit} min`);
+    setCodingSubmissionCount(0);
+    setCodingProblem(null);
+    setCodingResult(null);
+    setCodingCode("");
+  }
+
   async function startPractice() {
     try {
       setPracticeLoading(true);
@@ -222,6 +278,21 @@ export default function App() {
         skipped: feedback.skipped,
         answers: answersPayload,
       });
+
+      if (pendingMockRound && activeMockSession) {
+        const round = activeMockSession.rounds.find((item) => item.roundKey === pendingMockRound.roundKey);
+        if (round?.roundType === "aptitude" && activeMockSession.id === pendingMockRound.sessionId) {
+          const sessionResponse = await mockApi.completeRound(activeMockSession.id, round.roundKey, {
+            score: feedback.score,
+            maxScore: feedback.total,
+            accuracy: feedback.accuracy,
+            summary: `${round.roundLabel}: ${feedback.score}/${feedback.total} with ${Math.round(feedback.accuracy * 100)}% accuracy.`,
+          });
+          setActiveMockSession(sessionResponse.session);
+          setPendingMockRound(null);
+        }
+      }
+
       await refreshAnalytics();
     } catch (err) {
       console.error("Failed to save test", err);
@@ -268,6 +339,7 @@ export default function App() {
       setCodingLanguage(initialLanguage);
       setCodingCode(problem.starterCode[initialLanguage] || "");
       codingStartedAtRef.current = Date.now();
+      setCodingSubmissionCount(0);
     } catch (err: any) {
       setCodingError(err.message || "Failed to generate coding problem.");
     } finally {
@@ -291,6 +363,25 @@ export default function App() {
         solveTime,
       });
       setCodingResult(result);
+      setCodingSubmissionCount((current) => current + 1);
+
+      if (pendingMockRound && activeMockSession) {
+        const round = activeMockSession.rounds.find((item) => item.roundKey === pendingMockRound.roundKey);
+        if (round?.roundType === "coding" && activeMockSession.id === pendingMockRound.sessionId) {
+          const totalCases = result.summary.totalVisible + result.summary.totalHidden;
+          const passedCases = result.summary.passedVisible + result.summary.passedHidden;
+          const accuracy = totalCases ? passedCases / totalCases : 0;
+          const sessionResponse = await mockApi.completeRound(activeMockSession.id, round.roundKey, {
+            score: passedCases,
+            maxScore: totalCases,
+            accuracy,
+            summary: `${round.roundLabel}: passed ${passedCases}/${totalCases} evaluation cases.`,
+          });
+          setActiveMockSession(sessionResponse.session);
+          setPendingMockRound(null);
+        }
+      }
+
       await refreshAnalytics();
     } catch (err: any) {
       setCodingError(err.message || "Failed to evaluate code.");
@@ -307,6 +398,109 @@ export default function App() {
     resetPracticeState(defaultPracticeConfig);
     setCodingProblem(null);
     setCodingResult(null);
+    setActiveMockSession(null);
+    setMockHistory([]);
+    setActiveInterviewSession(null);
+    setInterviewHistory([]);
+  }
+
+  async function startMockSession(trackId: string, mode: MockMode) {
+    try {
+      setMockLoading(true);
+      setMockError("");
+      const response = await mockApi.start({ trackId, mode });
+      setActiveMockSession(response.session);
+      setActiveSection("mock");
+      await refreshAnalytics();
+    } catch (err: any) {
+      setMockError(err.message || "Failed to start mock session.");
+    } finally {
+      setMockLoading(false);
+    }
+  }
+
+  function launchMockRound(session: MockSession, roundKey: string) {
+    const round = session.rounds.find((item) => item.roundKey === roundKey);
+    if (!round) return;
+
+    setPendingMockRound({ sessionId: session.id, roundKey });
+    if (round.roundType === "coding") {
+      applyCodingPreset(round.roundLabel, round.difficulty, round.timeLimit);
+      setActiveSection("coding");
+      return;
+    }
+
+    const section = isPracticeSection(round.section || "") ? round.section : "numerical";
+    resetPracticeState({
+      section,
+      topic: round.topic || TOPICS[section][0],
+      difficulty: round.difficulty,
+      mode: "timed",
+    });
+    setActiveSection("practice");
+  }
+
+  async function startInterviewSession() {
+    try {
+      setInterviewLoading(true);
+      setInterviewError("");
+      setInterviewAnswerFeedback("");
+      const response = await interviewApi.start(interviewSetup);
+      setActiveInterviewSession(response.session);
+      setInterviewDraftAnswer("");
+      interviewTurnStartedAtRef.current = Date.now();
+      await refreshAnalytics();
+    } catch (err: any) {
+      setInterviewError(err.message || "Failed to start interview session.");
+    } finally {
+      setInterviewLoading(false);
+    }
+  }
+
+  async function submitInterviewAnswer() {
+    if (!activeInterviewSession || !interviewDraftAnswer.trim()) return;
+
+    try {
+      setInterviewLoading(true);
+      setInterviewError("");
+      const responseTime = interviewTurnStartedAtRef.current
+        ? Math.max(1, Math.round((Date.now() - interviewTurnStartedAtRef.current) / 1000))
+        : 0;
+      const response = await interviewApi.answer(activeInterviewSession.id, {
+        answer: interviewDraftAnswer,
+        responseTime,
+      });
+      setInterviewAnswerFeedback(response.answerFeedback);
+      setInterviewDraftAnswer("");
+
+      if (response.completed) {
+        const finished = await interviewApi.finish(activeInterviewSession.id);
+        setActiveInterviewSession(finished.session);
+      } else {
+        setActiveInterviewSession(response.session);
+      }
+
+      interviewTurnStartedAtRef.current = Date.now();
+      await refreshAnalytics();
+    } catch (err: any) {
+      setInterviewError(err.message || "Failed to submit interview answer.");
+    } finally {
+      setInterviewLoading(false);
+    }
+  }
+
+  async function finishInterview() {
+    if (!activeInterviewSession) return;
+    try {
+      setInterviewLoading(true);
+      const response = await interviewApi.finish(activeInterviewSession.id);
+      setActiveInterviewSession(response.session);
+      await refreshAnalytics();
+    } catch (err: any) {
+      setInterviewError(err.message || "Failed to finish interview session.");
+    } finally {
+      setInterviewLoading(false);
+    }
   }
 
   if (authLoading) {
@@ -344,7 +538,7 @@ export default function App() {
             <p className="text-xs uppercase tracking-[0.35em] text-emerald-200/80">Prep AI</p>
             <h1 className="mt-3 font-['Space_Grotesk'] text-3xl font-bold text-white">Placement cockpit</h1>
             <p className="mt-3 text-sm leading-7 text-slate-300">
-              Adaptive practice for aptitude and coding rounds with fresher-focused analytics.
+              Adaptive mock tracks, interview simulation, and readiness signals for fresher placement prep.
             </p>
           </div>
 
@@ -390,13 +584,25 @@ export default function App() {
             </div>
             {dashboard?.recommendation && (
               <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-300">
-                Next: <span className="font-semibold text-white capitalize">{dashboard.recommendation.section}</span> {dashboard.recommendation.mode}
+                Next: <span className="font-semibold text-white">{dashboard.nextRecommendedTrack.label}</span>
               </div>
             )}
           </div>
 
           {activeSection === "dashboard" && (
             <DashboardView data={dashboard} loading={analyticsLoading} onStartRecommendation={startRecommendedPractice} />
+          )}
+
+          {activeSection === "mock" && (
+            <MockView
+              tracks={mockTracks}
+              activeSession={activeMockSession}
+              history={mockHistory}
+              loading={mockLoading}
+              error={mockError}
+              onStart={(trackId, mode) => void startMockSession(trackId, mode)}
+              onLaunchRound={launchMockRound}
+            />
           )}
 
           {activeSection === "practice" && (
@@ -421,6 +627,9 @@ export default function App() {
           {activeSection === "coding" && (
             <CodingView
               difficulty={codingDifficulty}
+              presetLabel={codingPresetLabel}
+              submissionCount={codingSubmissionCount}
+              timerLabel={codingTimerLabel}
               language={codingLanguage}
               problem={codingProblem}
               result={codingResult}
@@ -437,6 +646,23 @@ export default function App() {
               onCodeChange={setCodingCode}
               onGenerate={() => void generateCodingProblem()}
               onSubmit={() => void submitCoding()}
+            />
+          )}
+
+          {activeSection === "interview" && (
+            <InterviewView
+              setup={interviewSetup}
+              activeSession={activeInterviewSession}
+              history={interviewHistory}
+              draftAnswer={interviewDraftAnswer}
+              answerFeedback={interviewAnswerFeedback}
+              loading={interviewLoading}
+              error={interviewError}
+              onSetupChange={setInterviewSetup}
+              onDraftAnswerChange={setInterviewDraftAnswer}
+              onStart={() => void startInterviewSession()}
+              onSubmitAnswer={() => void submitInterviewAnswer()}
+              onFinish={() => void finishInterview()}
             />
           )}
 

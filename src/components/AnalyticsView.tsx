@@ -19,9 +19,9 @@ export default function AnalyticsView({ data, loading }: AnalyticsViewProps) {
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-4">
         {[
+          ["Readiness score", `${data.readiness.readinessScore}`],
           ["Overall accuracy", formatPercent(data.overall.accuracy)],
-          ["Average score", data.overall.avg_score.toFixed(1)],
-          ["Tests completed", `${data.overall.tests}`],
+          ["Interview avg", `${data.interviewAnalytics.avgScore.toFixed(1)}`],
           ["Average pace", `${data.avgTime.toFixed(1)} sec/q`],
         ].map(([label, value]) => (
           <div key={label} className="rounded-[24px] border border-white/10 bg-white/5 p-5">
@@ -110,6 +110,29 @@ export default function AnalyticsView({ data, loading }: AnalyticsViewProps) {
 
       <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
         <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+          <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Readiness mix</h3>
+          <div className="mt-5 grid gap-3 md:grid-cols-2">
+            {[
+              ["Aptitude", data.readiness.aptitudeReadiness],
+              ["Coding", data.readiness.codingReadiness],
+              ["Interview", data.readiness.interviewReadiness],
+              ["Mock", data.readiness.mockReadiness],
+            ].map(([label, value]) => (
+              <div key={label} className="rounded-2xl border border-white/8 bg-black/20 p-4">
+                <div className="flex items-center justify-between text-sm text-white">
+                  <span>{label}</span>
+                  <span>{value}</span>
+                </div>
+                <div className="mt-3 h-2 rounded-full bg-white/5">
+                  <div className="h-2 rounded-full bg-amber-300" style={{ width: `${Math.min(Number(value), 100)}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4 text-sm leading-7 text-slate-300">{data.nextRecommendedTrack.reason}</p>
+        </div>
+
+        <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
           <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Improvement insights</h3>
           <div className="mt-5 space-y-3">
             {data.insights.map((insight) => (
@@ -146,6 +169,52 @@ export default function AnalyticsView({ data, loading }: AnalyticsViewProps) {
                 </p>
               </div>
             ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+        <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+          <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Recent mock outcomes</h3>
+          <div className="mt-5 space-y-3">
+            {data.recentMocks.length ? data.recentMocks.map((mock, index) => (
+              <div key={`${mock.completed_at}-${index}`} className="rounded-2xl border border-white/8 bg-black/20 p-4 text-sm text-slate-300">
+                <div className="flex items-center justify-between text-white">
+                  <span>{mock.track_name}</span>
+                  <span>{mock.readiness_score.toFixed(1)}</span>
+                </div>
+                <p className="mt-2 text-xs text-slate-400">
+                  {mock.mode} | {mock.passed ? "Passed cutoff" : "Needs retry"} | {formatDate(mock.completed_at)}
+                </p>
+              </div>
+            )) : (
+              <p className="text-sm text-slate-400">Mock history appears here after your first completed track.</p>
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+          <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Interview analytics</h3>
+          <div className="mt-5 grid gap-4 md:grid-cols-3">
+            {[
+              ["Completed", `${data.interviewAnalytics.completedInterviews}`],
+              ["Average score", `${data.interviewAnalytics.avgScore.toFixed(1)}`],
+              ["Weak themes", `${data.interviewAnalytics.recentThemes.length}`],
+            ].map(([label, value]) => (
+              <div key={label} className="rounded-2xl border border-white/8 bg-black/20 p-4">
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{label}</p>
+                <p className="mt-2 text-lg font-medium text-white">{value}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-5 flex flex-wrap gap-3">
+            {data.interviewAnalytics.recentThemes.length ? data.interviewAnalytics.recentThemes.map((theme) => (
+              <span key={theme} className="rounded-full border border-amber-300/20 bg-amber-300/10 px-4 py-2 text-sm text-amber-100">
+                {theme}
+              </span>
+            )) : (
+              <p className="text-sm text-slate-400">Interview themes appear after completed interview rounds.</p>
+            )}
           </div>
         </div>
       </div>

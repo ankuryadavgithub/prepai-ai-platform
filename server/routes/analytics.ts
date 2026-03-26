@@ -8,6 +8,8 @@ import {
   getTestsByUser,
   getTopicPerformanceByUser,
 } from "../models/testModel.js";
+import { getInterviewStatsByUser, getInterviewHistory } from "../models/interviewModel.js";
+import { getMockStatsByUser, getRecentCompletedMocks } from "../models/mockModel.js";
 
 const router = express.Router();
 const sectionNames = ["numerical", "logical", "verbal", "coding"];
@@ -84,6 +86,99 @@ function buildRecommendation({ sections, weakTopics, overall }: any) {
   };
 }
 
+function buildReadiness({ overall, sections, codingStats, mockStats, interviewStats }: any) {
+  const codingReadiness = Math.min(100, Math.round(toNumber(codingStats?.avg_pass_rate) * 100));
+  const aptitudeReadiness = Math.min(100, Math.round(toNumber(overall.accuracy) * 100));
+  const interviewReadiness = Math.min(100, Math.round(toNumber(interviewStats?.avg_score)));
+  const mockReadiness = Math.min(100, Math.round(toNumber(mockStats?.avg_readiness)));
+
+  const readinessScore = Math.round(
+    aptitudeReadiness * 0.35 +
+      codingReadiness * 0.25 +
+      interviewReadiness * 0.2 +
+      mockReadiness * 0.2
+  );
+
+  const sortedSections = [...sections].sort((a, b) => b.accuracy - a.accuracy);
+
+  return {
+    readinessScore,
+    strongestRoundType: sortedSections[0]?.section ?? "numerical",
+    weakestRoundType: sortedSections[sections.length - 1]?.section ?? "numerical",
+    aptitudeReadiness,
+    codingReadiness,
+    interviewReadiness,
+    mockReadiness,
+    interviewStatus: interviewStats?.completed_interviews
+      ? interviewReadiness >= 70
+        ? "Interview readiness is trending positive."
+        : "Interview readiness needs another targeted round."
+      : "No completed interview yet.",
+  };
+}
+
+function buildMockRecommendation({ readiness, weakTopics, codingStats, interviewStats }: any) {
+  if (!toNumber(interviewStats?.completed_interviews)) {
+    return {
+      type: "interview",
+      label: "Start HR Interview",
+      reason: "You have no interview baseline yet. Start with an HR round to measure structure, confidence, and clarity.",
+    };
+  }
+
+  if (readiness.codingReadiness < 55) {
+    return {
+      type: "mock",
+      label: "Coding-Only Product Mock",
+      reason: "Your coding pass rate is lagging behind aptitude. Take a coding-heavy mock before the next full sequence.",
+    };
+  }
+
+  if (weakTopics.length > 0 || readiness.aptitudeReadiness < 65) {
+    return {
+      type: "mock",
+      label: "Aptitude-Heavy Mock",
+      reason: "Your aptitude trend still has weak spots. Repair timed aptitude performance before shifting focus.",
+    };
+  }
+
+  if (readiness.interviewReadiness < 70) {
+    return {
+      type: "interview",
+      label: "Technical Interview Retry",
+      reason: "Interview readiness is the weakest signal now. Run a technical round and defend one project deeply.",
+    };
+  }
+
+  return {
+    type: "mock",
+    label: "Full Product Mock",
+    reason: "Your baseline is steady enough for a tougher end-to-end readiness check.",
+  };
+}
+
+function buildMilestones(payload: any) {
+  const milestones: string[] = [];
+
+  if (payload.readiness.readinessScore >= 70) {
+    milestones.push("Readiness score crossed 70. Start mixing harder mock tracks.");
+  }
+
+  if (payload.streak >= 5) {
+    milestones.push(`Consistency unlocked: ${payload.streak}-day streak.`);
+  }
+
+  if (toNumber(payload.mockStats?.passed_mocks) >= 1) {
+    milestones.push("You have already cleared at least one mock track cutoff.");
+  }
+
+  if (toNumber(payload.interviewStats?.completed_interviews) >= 2) {
+    milestones.push("Interview repetition is building. Compare transcript weak signals before the next round.");
+  }
+
+  return milestones.slice(0, 3);
+}
+
 function computeStreak(tests: any[]) {
   if (!tests.length) return 0;
 
@@ -105,45 +200,18 @@ function computeStreak(tests: any[]) {
 }
 
 async function buildAnalyticsPayload(user_id: number) {
-  const [tests, users, topicRows, difficultyRows, codingStats, recentCodingSubmissions] = await Promise.all([
+  const [tests, users, topicRows, difficultyRows, codingStats, recentCodingSubmissions, mockStats, recentMocks, interviewStats, interviewHistory] = await Promise.all([
     getTestsByUser(user_id),
     getAllUsersPerformance(),
     getTopicPerformanceByUser(user_id),
     getDifficultyPerformanceByUser(user_id),
     getCodingStatsByUser(user_id),
     getRecentCodingSubmissionsByUser(user_id),
+    getMockStatsByUser(user_id),
+    getRecentCompletedMocks(user_id),
+    getInterviewStatsByUser(user_id),
+    getInterviewHistory(user_id),
   ]);
-
-  if (!tests.length) {
-    return {
-      overall: { tests: 0, accuracy: 0, avg_score: 0 },
-      sections: [],
-      weakTopics: [],
-      avgTime: 0,
-      trend: [],
-      globalRank: {},
-      topicMastery: [],
-      difficultyBreakdown: [],
-      recentAttempts: [],
-      insights: [],
-      recommendation: {
-        section: "numerical",
-        topic: "Percentage",
-        difficulty: "Easy",
-        mode: "practice",
-        reason: "Take your first practice test to unlock adaptive recommendations."
-      },
-      streak: 0,
-      latestSummary: null,
-      codingStats: {
-        submissions: 0,
-        avg_pass_rate: 0,
-        avg_solve_time: 0,
-        latest_submission: null,
-        recent: []
-      }
-    };
-  }
 
   const totalTests = tests.length;
   const totalScore = tests.reduce((sum, test) => sum + toNumber(test.score), 0);
@@ -234,6 +302,20 @@ async function buildAnalyticsPayload(user_id: number) {
     created_at: latest.created_at,
   } : null;
 
+  const readiness = buildReadiness({ overall, sections, codingStats, mockStats, interviewStats });
+  const nextRecommendedTrack = buildMockRecommendation({ readiness, weakTopics, codingStats, interviewStats });
+  const weeklyTargetCompleted = Math.min(4, recentAttempts.filter((attempt) => {
+    const created = new Date(attempt.created_at).getTime();
+    return Date.now() - created <= 7 * 24 * 60 * 60 * 1000;
+  }).length + recentMocks.length);
+
+  const interviewThemes = interviewHistory
+    .filter((session: any) => session?.status === "completed")
+    .map((session: any) => session.finalSummary?.weakSignals ?? [])
+    .flat()
+    .filter(Boolean)
+    .slice(0, 4);
+
   return {
     overall,
     sections,
@@ -248,6 +330,33 @@ async function buildAnalyticsPayload(user_id: number) {
     recommendation: buildRecommendation({ sections, weakTopics, overall }),
     streak: computeStreak(tests),
     latestSummary,
+    readiness,
+    nextRecommendedTrack,
+    recentMocks: recentMocks.map((mock: any) => ({
+      track_name: mock.track_name,
+      mode: mock.mode,
+      readiness_score: toNumber(mock.readiness_score),
+      passed: Boolean(mock.passed),
+      strongest_round: mock.strongest_round,
+      weakest_round: mock.weakest_round,
+      completed_at: mock.completed_at,
+    })),
+    interviewAnalytics: {
+      completedInterviews: toNumber(interviewStats?.completed_interviews),
+      avgScore: toNumber(interviewStats?.avg_score),
+      latestCompletion: interviewStats?.latest_completion ?? null,
+      recentThemes: interviewThemes,
+    },
+    weeklyTarget: {
+      target: 4,
+      completed: weeklyTargetCompleted,
+    },
+    milestones: buildMilestones({
+      readiness,
+      streak: computeStreak(tests),
+      mockStats,
+      interviewStats,
+    }),
     codingStats: {
       submissions: toNumber(codingStats?.submissions),
       avg_pass_rate: toNumber(codingStats?.avg_pass_rate),
@@ -278,6 +387,12 @@ router.get("/dashboard", verifyToken, async (req: any, res) => {
       latestSummary: payload.latestSummary,
       insights: payload.insights,
       overall: payload.overall,
+      readiness: payload.readiness,
+      nextRecommendedTrack: payload.nextRecommendedTrack,
+      recentMocks: payload.recentMocks,
+      interviewAnalytics: payload.interviewAnalytics,
+      weeklyTarget: payload.weeklyTarget,
+      milestones: payload.milestones,
     });
   } catch (err) {
     console.error("DASHBOARD ERROR:", err);
