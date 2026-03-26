@@ -15,6 +15,7 @@ CREATE TABLE tests (
   category VARCHAR(50),
   topic VARCHAR(100),
   difficulty VARCHAR(20),
+  mode VARCHAR(20) DEFAULT 'timed',
 
   score INTEGER,
   total INTEGER,
@@ -34,8 +35,26 @@ CREATE TABLE tests (
 CREATE TABLE answers (
   id SERIAL PRIMARY KEY,
   test_id INTEGER REFERENCES tests(id),
+  question_index INTEGER,
+  topic VARCHAR(100),
+  subtopic VARCHAR(100),
+  time_spent INTEGER DEFAULT 0,
   question TEXT,
   selected_answer TEXT,
   correct_answer TEXT,
   is_correct BOOLEAN
+);
+
+CREATE TABLE coding_submissions (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id),
+  problem_title TEXT,
+  difficulty VARCHAR(20),
+  language VARCHAR(20),
+  solve_time INTEGER DEFAULT 0,
+  passed_visible INTEGER DEFAULT 0,
+  total_visible INTEGER DEFAULT 0,
+  passed_hidden INTEGER DEFAULT 0,
+  total_hidden INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

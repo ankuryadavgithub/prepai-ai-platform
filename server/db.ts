@@ -10,3 +10,78 @@ export const pool = new Pool({
   password: process.env.DB_PASSWORD,
   port: Number(process.env.DB_PORT),
 });
+
+export async function initDatabase() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(100),
+      email VARCHAR(100) UNIQUE NOT NULL,
+      password TEXT NOT NULL,
+      phone VARCHAR(15),
+      role VARCHAR(20) DEFAULT 'student',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS tests (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER REFERENCES users(id),
+      category VARCHAR(50),
+      topic VARCHAR(100),
+      difficulty VARCHAR(20),
+      mode VARCHAR(20) DEFAULT 'timed',
+      score INTEGER,
+      total INTEGER,
+      accuracy FLOAT,
+      time_taken INTEGER,
+      avg_time_per_q FLOAT,
+      correct_answers INTEGER,
+      wrong_answers INTEGER,
+      skipped INTEGER,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await pool.query(`ALTER TABLE tests ADD COLUMN IF NOT EXISTS mode VARCHAR(20) DEFAULT 'timed'`);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS answers (
+      id SERIAL PRIMARY KEY,
+      test_id INTEGER REFERENCES tests(id) ON DELETE CASCADE,
+      question_index INTEGER,
+      topic VARCHAR(100),
+      subtopic VARCHAR(100),
+      time_spent INTEGER DEFAULT 0,
+      question TEXT,
+      selected_answer TEXT,
+      correct_answer TEXT,
+      is_correct BOOLEAN
+    )
+  `);
+
+  await pool.query(`
+    ALTER TABLE answers
+    ADD COLUMN IF NOT EXISTS question_index INTEGER,
+    ADD COLUMN IF NOT EXISTS topic VARCHAR(100),
+    ADD COLUMN IF NOT EXISTS subtopic VARCHAR(100),
+    ADD COLUMN IF NOT EXISTS time_spent INTEGER DEFAULT 0
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS coding_submissions (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      problem_title TEXT,
+      difficulty VARCHAR(20),
+      language VARCHAR(20),
+      solve_time INTEGER DEFAULT 0,
+      passed_visible INTEGER DEFAULT 0,
+      total_visible INTEGER DEFAULT 0,
+      passed_hidden INTEGER DEFAULT 0,
+      total_hidden INTEGER DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+}

@@ -1,242 +1,79 @@
-import axios from "axios";
+import type {
+  AnalyticsData,
+  CodingProblem,
+  CodingSubmissionResult,
+  DashboardData,
+  Difficulty,
+  MCQQuestion,
+  PracticeMode,
+  User,
+} from "../types";
 
-const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+async function request<T>(url: string, init?: RequestInit, authenticated = false): Promise<T> {
+  const headers = new Headers(init?.headers);
 
-const callGroq = async (prompt: string) => {
-  try {
-    const res = await axios.post(
-      GROQ_URL,
-      {
-        model: "openai/gpt-oss-120b",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are an expert aptitude and coding question generator. ALWAYS return clean JSON only."
-          },
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
-        temperature: 0.6,
-        max_tokens: 2000
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        timeout: 15000
-      }
-    );
-
-    const content = res?.data?.choices?.[0]?.message?.content;
-
-    if (!content) {
-      throw new Error("Empty AI response");
-    }
-
-    return content;
-
-  } catch (err: any) {
-    console.log("🔥 GROQ ERROR:", err.response?.data || err.message);
-    throw err;
+  if (!headers.has("Content-Type") && init?.body) {
+    headers.set("Content-Type", "application/json");
   }
-};
 
-// ================= MCQ =================
-export const generateMCQ = async (
-  category: string,
-  topic: string,
-  difficulty: string,
-  retry = 0
-) => {
-  const prompt = `
-You are an expert aptitude trainer.
-
-Generate EXACTLY 10 ${difficulty} MCQs.
-
-STRICT CONDITIONS:
-- Category: ${category}
-- Topic: ${topic}
-- ONLY ${topic} questions
-- NO other topics
-- Placement level (TCS / Infosys)
-
-IMPORTANT:
-- Return ONLY JSON ARRAY
-- No markdown
-- No \`\`\`
-- No explanation outside JSON
-
-Format:
-[
-  {
-    "question": "",
-    "options": ["", "", "", ""],
-    "correct_answer": "",
-    "explanation": ""
-  }
-]
-`;
-
-  try {
-    let text = await callGroq(prompt);
-
-    // 🔥 CLEAN
-    text = text.replace(/```json/g, "").replace(/```/g, "").trim();
-
-    // 🔥 EXTRACT ARRAY
-    const start = text.indexOf("[");
-    const end = text.lastIndexOf("]");
-
-    if (start === -1 || end === -1) {
-      throw new Error("No JSON array found");
+  if (authenticated) {
+    const token = localStorage.getItem("token");
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
     }
-
-    text = text.substring(start, end + 1);
-
-    let data = JSON.parse(text);
-
-    if (!Array.isArray(data)) data = [data];
-
-    // 🔥 VALIDATION
-    const valid = data.filter(
-      (q: any) =>
-        q?.question &&
-        Array.isArray(q.options) &&
-        q.options.length === 4 &&
-        q.correct_answer &&
-        q.explanation
-    );
-
-    // 🔥 TOPIC FILTER
-    const keywords = topicKeywords[topic] || [];
-
-    const strictValid = valid.filter((q: any) =>
-      keywords.some((k: string) =>
-        q.question.toLowerCase().includes(k.toLowerCase())
-      )
-    );
-
-    // 🔥 FINAL LOGIC
-    if (strictValid.length >= 7) return strictValid.slice(0, 10);
-    if (valid.length >= 7) return valid.slice(0, 10);
-
-    // 🔁 RETRY SAFE
-    if (retry < 2) {
-      console.log("Retrying MCQ...");
-      return await generateMCQ(category, topic, difficulty, retry + 1);
-    }
-
-    return valid.slice(0, 10);
-
-  } catch (err) {
-    console.log("MCQ ERROR:", err);
-    return [];
   }
-};
 
+  const response = await fetch(url, { ...init, headers });
+  const data = await response.json().catch(() => ({}));
 
-// ================= KEYWORDS =================
-const topicKeywords: any = {
-  "Percentage": ["%", "percent", "increase", "decrease"],
-  "Number System": ["divisible", "remainder", "integer"],
-  "Arithmetic": ["sum", "difference"],
-  "Data Interpretation": ["table", "chart", "graph"],
-  "Geometry & Mensuration": ["area", "volume", "perimeter"],
-  "Profit & Loss": ["profit", "loss"],
-  "Ratio & Proportion": ["ratio"],
-  "Time & Work": ["work", "days"],
-  "Simplification": ["simplify"],
-  "Speed, Time & Distance": ["speed", "distance"],
-  "LCM & HCF": ["lcm", "hcf"],
-  "Linear Equation": ["equation"],
-  "Mixture & Alligation": ["mixture"],
-  "Permutation & Combination": ["permutation"],
-  "Simple & Compound Interest": ["interest"],
-  "Average": ["average"],
-  "Divisibility Rules": ["divisible"],
-  "Partnership": ["investment"],
-  "Probability": ["probability"],
-  "Age Problems": ["age"],
-  "Train Problems": ["train"],
+  if (!response.ok) {
+    throw new Error(data.error || "Request failed");
+  }
 
-  "Logical Deduction": ["conclusion"],
-  "Letter & Number Series": ["series"],
-  "Data Sufficiency": ["statement"],
-  "Pattern Recognition": ["pattern"],
-  "Syllogism": ["all", "some"],
-  "Blood Relation": ["father"],
-  "Data Arrangement": ["arrange"],
-  "Visual Reasoning": ["figure"],
-  "Spatial Reasoning": ["direction"],
-  "Attention to Detail": ["match"],
-  "Venn Diagrams": ["venn"],
-  "Calendar": ["day"],
-  "Coding-Decoding": ["code"],
-  "Directions": ["north"],
-  "Seating Arrangement": ["sitting"],
-
-  "Reading Comprehension": ["passage"],
-  "Cloze Test": ["blank"],
-  "Error Spotting": ["error"],
-  "Sentence Completion": ["complete"],
-  "Synonyms & Antonyms": ["similar"],
-  "Vocabulary": ["meaning"],
-  "Para Jumbles": ["arrange"],
-  "Grammar": ["grammar"],
-  "Tense": ["past"],
-  "Articles, Prepositions, Conjunctions": ["the"],
-  "Subject-Verb Agreement": ["verb"]
-};
-
-
-// ================= CODING =================
-export const generateCodingProblem = async (
-  difficulty: string,
-  retry = 0
-) => {
-  const prompt = `
-Generate ONE ${difficulty} coding problem.
-
-Return ONLY JSON:
-{
-  "problem": "",
-  "input": "",
-  "output": "",
-  "constraints": "",
-  "solution": ""
+  return data as T;
 }
-`;
 
-  try {
-    let text = await callGroq(prompt);
+export const authApi = {
+  login: (payload: { email: string; password: string }) =>
+    request<{ token: string; user: User }>("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  register: (payload: { name: string; email: string; phone: string; password: string }) =>
+    request<{ message: string; user: User }>("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  me: () => request<{ user: User }>("/api/auth/me", undefined, true),
+};
 
-    text = text.replace(/```json/g, "").replace(/```/g, "").trim();
+export const practiceApi = {
+  generateMCQ: (payload: { category: string; topic: string; difficulty: Difficulty; mode: PracticeMode }) =>
+    request<MCQQuestion[]>("/api/practice/mcq", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  saveTest: (payload: unknown) =>
+    request<{ success: boolean }>("/api/test/save", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }, true),
+};
 
-    const start = text.indexOf("{");
-    const end = text.lastIndexOf("}");
+export const analyticsApi = {
+  dashboard: () => request<DashboardData>("/api/analytics/dashboard", undefined, true),
+  full: () => request<AnalyticsData>("/api/analytics/user", undefined, true),
+};
 
-    if (start === -1 || end === -1) {
-      throw new Error("Invalid JSON");
-    }
-
-    const data = JSON.parse(text.substring(start, end + 1));
-
-    if (!data.problem) throw new Error("Invalid structure");
-
-    return data;
-
-  } catch (err) {
-    console.log("CODING ERROR:", err);
-
-    if (retry < 2) {
-      console.log("Retrying Coding Problem...");
-      return await generateCodingProblem(difficulty, retry + 1);
-    }
-
-    return null;
-  }
+export const codingApi = {
+  generateProblem: (difficulty: Difficulty) =>
+    request<CodingProblem>("/api/code/problem", {
+      method: "POST",
+      body: JSON.stringify({ difficulty }),
+    }, true),
+  submit: (payload: { problemId: string; code: string; language: string; solveTime: number }) =>
+    request<CodingSubmissionResult>("/api/code/submit", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }, true),
 };

@@ -5,7 +5,6 @@ import { createUser, findUserByEmail } from "../models/userModel.js";
 
 const router = express.Router();
 
-// REGISTER
 router.post("/register", async (req, res) => {
   try {
     const { name, email, password, phone } = req.body;
@@ -24,19 +23,15 @@ router.post("/register", async (req, res) => {
     }
 
     const hashed = await bcrypt.hash(password, 10);
-
     const user = await createUser(name, email, hashed, phone);
 
     res.json({ message: "Registered successfully", user });
-
-  } catch (err: any) {
-  console.error("REGISTER ERROR:", err); // 🔥 shows full error
-  res.status(500).json({ error: err.message });
-}
-
+  } catch (err) {
+    console.error("REGISTER ERROR:", err);
+    res.status(500).json({ error: "Registration failed" });
+  }
 });
 
-// LOGIN
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -57,16 +52,35 @@ router.post("/login", async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    // ❌ remove password
-    const { password: _, ...safeUser } = user;
-
+    const { password: _password, ...safeUser } = user;
     res.json({ token, user: safeUser });
+  } catch (err) {
+    console.error("LOGIN ERROR:", err);
+    res.status(500).json({ error: "Login failed" });
+  }
+});
 
-  } catch (err: any) {
-  console.error("LOGIN ERROR:", err); // 🔥 important
-  res.status(500).json({ error: err.message });
-}
+router.get("/me", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
 
+    if (!authHeader) {
+      return res.status(401).json({ error: "No token provided" });
+    }
+
+    const token = authHeader.split(" ")[1];
+    const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
+    const user = await findUserByEmail(decoded.email);
+
+    if (!user) {
+      return res.status(401).json({ error: "User not found" });
+    }
+
+    const { password: _password, ...safeUser } = user;
+    res.json({ user: safeUser });
+  } catch {
+    res.status(401).json({ error: "Invalid token" });
+  }
 });
 
 export default router;
