@@ -2,15 +2,27 @@ import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { createUser, findUserByEmail } from "../models/userModel.js";
+import { verifyToken } from "../middleware/authMiddleware.js";
+import { createRateLimit } from "../middleware/rateLimit.js";
 
 const router = express.Router();
+const authRateLimit = createRateLimit({ windowMs: 15 * 60 * 1000, max: 25, keyPrefix: "auth" });
 
-router.post("/register", async (req, res) => {
+function normalizeEmail(email: unknown) {
+  return typeof email === "string" ? email.trim().toLowerCase() : "";
+}
+
+router.post("/register", authRateLimit, async (req, res) => {
   try {
-    const { name, email, password, phone } = req.body;
+    const { name, password, phone } = req.body;
+    const email = normalizeEmail(req.body?.email);
 
     if (!name || !email || !password) {
       return res.status(400).json({ error: "All fields required" });
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: "Invalid email address" });
     }
 
     if (password.length < 6) {
@@ -23,7 +35,7 @@ router.post("/register", async (req, res) => {
     }
 
     const hashed = await bcrypt.hash(password, 10);
-    const user = await createUser(name, email, hashed, phone);
+    const user = await createUser(String(name).trim(), email, hashed, typeof phone === "string" ? phone.trim() : "");
 
     res.json({ message: "Registered successfully", user });
   } catch (err) {
@@ -32,18 +44,19 @@ router.post("/register", async (req, res) => {
   }
 });
 
-router.post("/login", async (req, res) => {
+router.post("/login", authRateLimit, async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const email = normalizeEmail(req.body?.email);
+    const { password } = req.body;
 
     const user = await findUserByEmail(email);
     if (!user) {
-      return res.status(400).json({ error: "User not found" });
+      return res.status(400).json({ error: "Invalid email or password" });
     }
 
     const match = await bcrypt.compare(password, user.password);
     if (!match) {
-      return res.status(400).json({ error: "Invalid password" });
+      return res.status(400).json({ error: "Invalid email or password" });
     }
 
     const token = jwt.sign(
@@ -60,17 +73,9 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.get("/me", async (req, res) => {
+router.get("/me", verifyToken, async (req: any, res) => {
   try {
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader) {
-      return res.status(401).json({ error: "No token provided" });
-    }
-
-    const token = authHeader.split(" ")[1];
-    const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
-    const user = await findUserByEmail(decoded.email);
+    const user = await findUserByEmail(normalizeEmail(req.user?.email));
 
     if (!user) {
       return res.status(401).json({ error: "User not found" });

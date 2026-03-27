@@ -3,6 +3,7 @@ import type { InterviewSession, InterviewSetup } from "../types";
 import { formatDate } from "../utils/practice";
 
 type InterviewViewProps = {
+  theme: "dark" | "light";
   setup: InterviewSetup;
   activeSession: InterviewSession | null;
   history: InterviewSession[];
@@ -41,6 +42,7 @@ function getSpeechRecognitionConstructor() {
 }
 
 export default function InterviewView({
+  theme,
   setup,
   activeSession,
   history,
@@ -154,7 +156,11 @@ export default function InterviewView({
       )}
 
       <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-        <div className="rounded-[30px] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.16),transparent_35%),linear-gradient(160deg,rgba(15,23,42,0.96),rgba(2,6,23,0.88))] p-8">
+        <div className={`rounded-[30px] border border-white/10 p-8 ${
+          theme === "dark"
+            ? "bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.16),transparent_35%),linear-gradient(160deg,rgba(15,23,42,0.96),rgba(2,6,23,0.88))]"
+            : "bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.14),transparent_35%),linear-gradient(160deg,rgba(255,255,255,0.96),rgba(241,245,249,0.92))]"
+        }`}>
           <p className="text-xs uppercase tracking-[0.3em] text-amber-300/70">Interview Setup</p>
           <h2 className="mt-4 font-['Space_Grotesk'] text-3xl font-bold text-white">Text or speech interview simulation</h2>
           <p className="mt-4 text-sm leading-7 text-slate-300">

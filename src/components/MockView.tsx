@@ -2,6 +2,7 @@ import type { MockMode, MockSession, MockTrack } from "../types";
 import { formatDate } from "../utils/practice";
 
 type MockViewProps = {
+  theme: "dark" | "light";
   tracks: MockTrack[];
   activeSession: MockSession | null;
   history: MockSession[];
@@ -12,6 +13,7 @@ type MockViewProps = {
 };
 
 export default function MockView({
+  theme,
   tracks,
   activeSession,
   history,
@@ -25,7 +27,13 @@ export default function MockView({
       {error && <div className="rounded-2xl border border-rose-400/20 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">{error}</div>}
 
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-        <div className="rounded-[30px] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_36%),linear-gradient(160deg,rgba(15,23,42,0.96),rgba(2,6,23,0.88))] p-8">
+        <div
+          className={`rounded-[30px] border border-white/10 p-8 ${
+            theme === "dark"
+              ? "bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_36%),linear-gradient(160deg,rgba(15,23,42,0.96),rgba(2,6,23,0.88))]"
+              : "bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_36%),linear-gradient(160deg,rgba(255,255,255,0.96),rgba(241,245,249,0.92))]"
+          }`}
+        >
           <p className="text-xs uppercase tracking-[0.3em] text-emerald-300/70">Mock Tracks</p>
           <h2 className="mt-4 font-['Space_Grotesk'] text-3xl font-bold text-white">Company-style readiness tracks</h2>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300">
@@ -41,6 +49,7 @@ export default function MockView({
                     <p className="mt-2 text-sm text-slate-300">{track.description}</p>
                     <p className="mt-2 text-xs uppercase tracking-[0.2em] text-slate-500">{track.target}</p>
                   </div>
+
                   <div className="flex flex-wrap gap-2">
                     {track.modes.map((mode) => (
                       <button
@@ -61,7 +70,7 @@ export default function MockView({
                     <div key={round.roundKey} className="rounded-2xl border border-white/8 bg-white/5 p-4">
                       <p className="text-sm font-medium text-white">{round.roundLabel}</p>
                       <p className="mt-2 text-xs text-slate-400">
-                        {round.difficulty} • {round.timeLimit} min • cutoff {round.cutoffScore}
+                        {round.difficulty} | {round.timeLimit} min | cutoff {round.cutoffScore}
                       </p>
                       <p className="mt-2 text-sm text-slate-300">{round.topic}</p>
                     </div>
@@ -80,7 +89,7 @@ export default function MockView({
             ) : (
               <div className="mt-5 space-y-4">
                 <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
-                  <p className="text-sm text-slate-300">{activeSession.trackName} • {activeSession.mode}</p>
+                  <p className="text-sm text-slate-300">{activeSession.trackName} | {activeSession.mode}</p>
                   <p className="mt-2 text-lg font-semibold text-white">Readiness: {activeSession.readinessScore.toFixed(1)}</p>
                   <p className="mt-3 text-sm leading-7 text-slate-300">{activeSession.nextPriority || "Complete each round in sequence."}</p>
                 </div>
@@ -91,7 +100,7 @@ export default function MockView({
                       <div>
                         <p className="text-base font-medium text-white">{round.roundLabel}</p>
                         <p className="mt-1 text-xs uppercase tracking-[0.15em] text-slate-400">
-                          {round.roundType} • {round.difficulty} • cutoff {round.cutoffScore}
+                          {round.roundType} | {round.difficulty} | cutoff {round.cutoffScore}
                         </p>
                       </div>
                       {round.status === "completed" ? (
@@ -127,7 +136,7 @@ export default function MockView({
                     </span>
                   </div>
                   <p className="mt-2 text-sm text-slate-300">
-                    Readiness {session.readinessScore.toFixed(1)} • {session.strongestRound || "No strongest round yet"}
+                    Readiness {session.readinessScore.toFixed(1)} | {session.strongestRound || "No strongest round yet"}
                   </p>
                   <p className="mt-1 text-xs text-slate-400">{session.completedAt ? formatDate(session.completedAt) : "In progress"}</p>
                 </div>

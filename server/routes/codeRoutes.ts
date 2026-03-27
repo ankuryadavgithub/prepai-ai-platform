@@ -7,11 +7,13 @@ import vm from "vm";
 import { spawn } from "child_process";
 import { randomUUID } from "crypto";
 import { verifyToken } from "../middleware/authMiddleware.js";
+import { createRateLimit } from "../middleware/rateLimit.js";
 import { saveCodingSubmission } from "../models/testModel.js";
 
 const router = express.Router();
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 const SUPPORTED_LANGUAGES = ["javascript", "python"];
+const codingRateLimit = createRateLimit({ windowMs: 10 * 60 * 1000, max: 15, keyPrefix: "coding" });
 
 type CodingTestCase = {
   input: any[];
@@ -20,6 +22,7 @@ type CodingTestCase = {
 
 type StoredCodingProblem = {
   id: string;
+  expiresAt: number;
   title: string;
   difficulty: string;
   description: string;
@@ -32,9 +35,19 @@ type StoredCodingProblem = {
 };
 
 const problemStore = new Map<string, StoredCodingProblem>();
+const PROBLEM_TTL_MS = 30 * 60 * 1000;
+
+function sweepExpiredProblems() {
+  const now = Date.now();
+  for (const [id, problem] of problemStore.entries()) {
+    if (problem.expiresAt <= now) {
+      problemStore.delete(id);
+    }
+  }
+}
 
 async function callGroq(prompt: string) {
-  const apiKey = process.env.GROQ_API_KEY || process.env.VITE_GROQ_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY;
 
   if (!apiKey) {
     throw new Error("Missing AI API key");
@@ -71,6 +84,46 @@ async function callGroq(prompt: string) {
   return content.replace(/```json/g, "").replace(/```/g, "").trim();
 }
 
+function validateDifficulty(input: unknown) {
+  return input === "Easy" || input === "Hard" ? input : "Medium";
+}
+
+function assertSafeSubmission(code: string, language: string) {
+  if (code.length > 12000) {
+    throw new Error("Submission is too large");
+  }
+
+  const patterns =
+    language === "javascript"
+      ? [
+          /\brequire\s*\(/,
+          /\bprocess\b/,
+          /\bglobalThis\b/,
+          /\bFunction\s*\(/,
+          /\beval\s*\(/,
+          /\bimport\s*\(/,
+          /\bconstructor\b/,
+          /\bwhile\s*\(\s*true\s*\)/,
+          /\bfor\s*\(\s*;\s*;\s*\)/,
+        ]
+      : [
+          /\bimport\s+os\b/,
+          /\bimport\s+sys\b/,
+          /\bimport\s+subprocess\b/,
+          /\bfrom\s+os\b/,
+          /\bfrom\s+sys\b/,
+          /\bopen\s*\(/,
+          /\bexec\s*\(/,
+          /\beval\s*\(/,
+          /\b__import__\b/,
+          /\bwhile\s+True\s*:/,
+        ];
+
+  if (patterns.some((pattern) => pattern.test(code))) {
+    throw new Error("Submission contains restricted operations");
+  }
+}
+
 function safeParseJson<T>(content: string): T {
   const start = content.indexOf("{");
   const end = content.lastIndexOf("}");
@@ -87,6 +140,7 @@ function normalizeGeneratedProblem(data: any, difficulty: string): StoredCodingP
 
   return {
     id: randomUUID(),
+    expiresAt: Date.now() + PROBLEM_TTL_MS,
     title: data.title || "Coding Challenge",
     difficulty,
     description: data.description || data.problem || "Solve the problem using the requested function signature.",
@@ -113,6 +167,7 @@ function serialize(value: any) {
 }
 
 async function runJavaScript(code: string, functionName: string, tests: CodingTestCase[]) {
+  assertSafeSubmission(code, "javascript");
   const wrapped = `${code}
 
 if (typeof ${functionName} !== "function") {
@@ -127,7 +182,7 @@ module.exports = ${functionName};
   };
 
   const script = new vm.Script(wrapped);
-  script.runInNewContext(context, { timeout: 1000 });
+  script.runInNewContext(context, { timeout: 1000, contextCodeGeneration: { strings: false, wasm: false } });
   const fn = context.module.exports as (...args: any[]) => any;
 
   return tests.map((test) => {
@@ -153,6 +208,7 @@ module.exports = ${functionName};
 }
 
 async function runPython(code: string, functionName: string, tests: CodingTestCase[]) {
+  assertSafeSubmission(code, "python");
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "prepai-"));
   const solutionPath = path.join(tempDir, "solution.py");
   const runnerPath = path.join(tempDir, "runner.py");
@@ -166,8 +222,9 @@ async function runPython(code: string, functionName: string, tests: CodingTestCa
   const payload = JSON.stringify(tests);
 
   const result = await new Promise<any[]>((resolve, reject) => {
-    const child = spawn("python", [runnerPath, payload], {
+    const child = spawn("python", ["-I", runnerPath, payload], {
       cwd: tempDir,
+      env: {},
       stdio: ["ignore", "pipe", "pipe"],
     });
 
@@ -210,9 +267,9 @@ async function runPython(code: string, functionName: string, tests: CodingTestCa
   }));
 }
 
-router.post("/problem", verifyToken, async (req: any, res) => {
+router.post("/problem", verifyToken, codingRateLimit, async (req: any, res) => {
   try {
-    const difficulty = req.body?.difficulty || "Medium";
+    const difficulty = validateDifficulty(req.body?.difficulty);
     const prompt = `
 Generate one fresher-level coding interview problem as JSON.
 
@@ -247,6 +304,7 @@ Rules:
 
     const raw = await callGroq(prompt);
     const problem = normalizeGeneratedProblem(safeParseJson<any>(raw), difficulty);
+    sweepExpiredProblems();
     problemStore.set(problem.id, problem);
 
     res.json({
@@ -267,9 +325,10 @@ Rules:
   }
 });
 
-router.post("/submit", verifyToken, async (req: any, res) => {
+router.post("/submit", verifyToken, codingRateLimit, async (req: any, res) => {
   try {
     const { problemId, code, language, solveTime } = req.body;
+    sweepExpiredProblems();
 
     if (!problemId || typeof code !== "string" || !SUPPORTED_LANGUAGES.includes(language)) {
       return res.status(400).json({ error: "Invalid coding submission" });
@@ -302,6 +361,8 @@ router.post("/submit", verifyToken, async (req: any, res) => {
       passed_hidden: passedHidden,
       total_hidden: hiddenResults.length,
     });
+
+    problemStore.delete(problemId);
 
     res.json({
       summary: {

@@ -1,8 +1,10 @@
 import express from "express";
 import axios from "axios";
+import { createRateLimit } from "../middleware/rateLimit.js";
 
 const router = express.Router();
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+const practiceRateLimit = createRateLimit({ windowMs: 10 * 60 * 1000, max: 20, keyPrefix: "practice-mcq" });
 
 function findJsonArrayBlock(content: string) {
   const cleaned = content.replace(/```json/g, "").replace(/```/g, "").trim();
@@ -51,7 +53,7 @@ function parseQuestionArray(content: string) {
 }
 
 async function callGroq(prompt: string) {
-  const apiKey = process.env.GROQ_API_KEY || process.env.VITE_GROQ_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY;
 
   if (!apiKey) {
     throw new Error("Missing AI API key");
@@ -151,15 +153,27 @@ Rules:
   }
 }
 
-router.post("/mcq", async (req, res) => {
+router.post("/mcq", practiceRateLimit, async (req, res) => {
   try {
     const { category, topic, difficulty, mode } = req.body;
 
-    if (!category || !topic || !difficulty) {
+    if (
+      typeof category !== "string" ||
+      typeof topic !== "string" ||
+      typeof difficulty !== "string" ||
+      !category.trim() ||
+      !topic.trim() ||
+      !difficulty.trim()
+    ) {
       return res.status(400).json({ error: "Missing generation inputs" });
     }
 
-    const questions = await generateQuestions({ category, topic, difficulty, mode });
+    const questions = await generateQuestions({
+      category: category.trim(),
+      topic: topic.trim(),
+      difficulty: difficulty.trim(),
+      mode: mode === "practice" ? "practice" : "timed",
+    });
     res.json(questions);
   } catch (err) {
     console.error("MCQ GENERATION ERROR:", err);

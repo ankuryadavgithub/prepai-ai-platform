@@ -24,6 +24,8 @@ export async function initDatabase() {
     )
   `);
 
+  await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS users_email_lower_idx ON users (LOWER(email))`);
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS tests (
       id SERIAL PRIMARY KEY,
@@ -85,6 +87,12 @@ export async function initDatabase() {
     )
   `);
 
+  await pool.query(`CREATE INDEX IF NOT EXISTS tests_user_created_idx ON tests (user_id, created_at DESC)`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS tests_user_category_idx ON tests (user_id, category)`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS answers_test_idx ON answers (test_id)`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS answers_topic_idx ON answers (topic, subtopic)`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS coding_submissions_user_created_idx ON coding_submissions (user_id, created_at DESC)`);
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS mock_sessions (
       id SERIAL PRIMARY KEY,
@@ -103,6 +111,8 @@ export async function initDatabase() {
       completed_at TIMESTAMP
     )
   `);
+
+  await pool.query(`CREATE INDEX IF NOT EXISTS mock_sessions_user_status_idx ON mock_sessions (user_id, status, started_at DESC)`);
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS mock_round_results (
@@ -124,6 +134,8 @@ export async function initDatabase() {
       completed_at TIMESTAMP
     )
   `);
+
+  await pool.query(`CREATE INDEX IF NOT EXISTS mock_round_results_session_idx ON mock_round_results (session_id)`);
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS interview_sessions (
@@ -154,6 +166,8 @@ export async function initDatabase() {
     ADD COLUMN IF NOT EXISTS interaction_mode VARCHAR(20) DEFAULT 'text'
   `);
 
+  await pool.query(`CREATE INDEX IF NOT EXISTS interview_sessions_user_status_idx ON interview_sessions (user_id, status, created_at DESC)`);
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS interview_turns (
       id SERIAL PRIMARY KEY,
@@ -175,4 +189,6 @@ export async function initDatabase() {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  await pool.query(`CREATE INDEX IF NOT EXISTS interview_turns_session_turn_idx ON interview_turns (session_id, turn_index)`);
 }

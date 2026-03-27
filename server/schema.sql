@@ -136,3 +136,14 @@ CREATE TABLE interview_turns (
   response_time INTEGER DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE UNIQUE INDEX users_email_lower_idx ON users (LOWER(email));
+CREATE INDEX tests_user_created_idx ON tests (user_id, created_at DESC);
+CREATE INDEX tests_user_category_idx ON tests (user_id, category);
+CREATE INDEX answers_test_idx ON answers (test_id);
+CREATE INDEX answers_topic_idx ON answers (topic, subtopic);
+CREATE INDEX coding_submissions_user_created_idx ON coding_submissions (user_id, created_at DESC);
+CREATE INDEX mock_sessions_user_status_idx ON mock_sessions (user_id, status, started_at DESC);
+CREATE INDEX mock_round_results_session_idx ON mock_round_results (session_id);
+CREATE INDEX interview_sessions_user_status_idx ON interview_sessions (user_id, status, created_at DESC);
+CREATE INDEX interview_turns_session_turn_idx ON interview_turns (session_id, turn_index);

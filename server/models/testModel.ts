@@ -60,7 +60,7 @@ export const saveTest = async (data: any) => {
 
     const testId = testRes.rows[0].id;
 
-    for (const ans of answers) {
+    for (const ans of answers.filter((item: any) => item && typeof item.question === "string")) {
       await client.query(
         `INSERT INTO answers (
           test_id,

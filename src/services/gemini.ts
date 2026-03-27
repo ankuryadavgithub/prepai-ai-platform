@@ -32,6 +32,9 @@ async function request<T>(url: string, init?: RequestInit, authenticated = false
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
+    if (response.status === 401 && authenticated) {
+      localStorage.removeItem("token");
+    }
     throw new Error(data.error || "Request failed");
   }
 

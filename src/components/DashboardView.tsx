@@ -2,12 +2,13 @@ import type { DashboardData } from "../types";
 import { formatDate, formatPercent } from "../utils/practice";
 
 type DashboardViewProps = {
+  theme: "dark" | "light";
   data: DashboardData | null;
   loading: boolean;
   onStartRecommendation: () => void;
 };
 
-export default function DashboardView({ data, loading, onStartRecommendation }: DashboardViewProps) {
+export default function DashboardView({ theme, data, loading, onStartRecommendation }: DashboardViewProps) {
   if (loading) {
     return <div className="rounded-[28px] border border-white/10 bg-white/5 p-8 text-slate-300">Loading dashboard...</div>;
   }
@@ -19,7 +20,11 @@ export default function DashboardView({ data, loading, onStartRecommendation }: 
   return (
     <div className="space-y-6">
       <div className="grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
-        <div className="rounded-[30px] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.18),transparent_42%),linear-gradient(160deg,rgba(15,23,42,0.96),rgba(2,6,23,0.88))] p-8">
+        <div className={`rounded-[30px] border border-white/10 p-8 ${
+          theme === "dark"
+            ? "bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.18),transparent_42%),linear-gradient(160deg,rgba(15,23,42,0.96),rgba(2,6,23,0.88))]"
+            : "bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.18),transparent_42%),linear-gradient(160deg,rgba(255,255,255,0.96),rgba(248,250,252,0.92))]"
+        }`}>
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-amber-300/80">Recommended Next Step</p>
           <h2 className="mt-4 font-['Space_Grotesk'] text-3xl font-bold capitalize text-white">
             {data.recommendation.section} {data.recommendation.mode} session

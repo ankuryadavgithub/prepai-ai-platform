@@ -13,12 +13,16 @@ import { initDatabase } from "./server/db.js";
 dotenv.config();
 
 async function startServer() {
+  if (!process.env.JWT_SECRET) {
+    throw new Error("Missing JWT_SECRET in environment");
+  }
+
   const app = express();
   const PORT = 3000;
 
   await initDatabase();
 
-  app.use(express.json());
+  app.use(express.json({ limit: "1mb" }));
   app.use("/api/auth", authRoutes);
   app.use("/api/practice", practiceRoutes);
   app.use("/api/code", codeRoutes);

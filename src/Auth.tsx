@@ -3,13 +3,17 @@ import { authApi } from "./services/gemini";
 import type { User } from "./types";
 
 type AuthProps = {
+  theme: "dark" | "light";
   setUser: (user: User) => void;
 };
 
-const inputClass =
-  "w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-emerald-400/60 focus:bg-white/8";
+export default function Auth({ theme, setUser }: AuthProps) {
+  const inputClass = `w-full rounded-2xl border px-4 py-3 text-sm outline-none transition focus:border-emerald-400/60 ${
+    theme === "dark"
+      ? "border-white/10 bg-white/5 text-slate-100 focus:bg-white/8"
+      : "border-slate-200 bg-white text-slate-900 focus:bg-slate-50"
+  }`;
 
-export default function Auth({ setUser }: AuthProps) {
   const [tab, setTab] = useState<"login" | "register">("login");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -72,16 +76,30 @@ export default function Auth({ setUser }: AuthProps) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl rounded-[32px] border border-white/10 bg-slate-950/70 p-6 shadow-[0_30px_120px_rgba(0,0,0,0.45)] backdrop-blur-xl lg:p-8">
+    <div className={`mx-auto w-full max-w-5xl rounded-[32px] p-6 shadow-[0_30px_120px_rgba(0,0,0,0.18)] backdrop-blur-xl lg:p-8 ${
+      theme === "dark"
+        ? "border border-white/10 bg-slate-950/70"
+        : "border border-slate-200 bg-white/80"
+    }`}>
       <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="rounded-[28px] border border-white/8 bg-[radial-gradient(circle_at_top_left,rgba(52,211,153,0.22),transparent_42%),linear-gradient(160deg,rgba(15,23,42,0.96),rgba(2,6,23,0.92))] p-8">
-          <p className="mb-4 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-300/80">
+        <div className={`rounded-[28px] p-8 ${
+          theme === "dark"
+            ? "border border-white/8 bg-[radial-gradient(circle_at_top_left,rgba(52,211,153,0.22),transparent_42%),linear-gradient(160deg,rgba(15,23,42,0.96),rgba(2,6,23,0.92))]"
+            : "border border-slate-200 bg-[radial-gradient(circle_at_top_left,rgba(52,211,153,0.16),transparent_42%),linear-gradient(160deg,rgba(255,255,255,0.98),rgba(241,245,249,0.94))]"
+        }`}>
+          <p className={`mb-4 text-xs font-semibold uppercase tracking-[0.3em] ${
+            theme === "dark" ? "text-emerald-300/80" : "text-emerald-600"
+          }`}>
             Prep AI
           </p>
-          <h1 className="max-w-xl font-['Space_Grotesk'] text-4xl font-bold leading-tight text-white lg:text-5xl">
+          <h1 className={`max-w-xl font-['Space_Grotesk'] text-4xl font-bold leading-tight lg:text-5xl ${
+            theme === "dark" ? "text-white" : "text-slate-900"
+          }`}>
             Placement prep that reacts to how the learner actually performs.
           </h1>
-          <p className="mt-5 max-w-lg text-sm leading-7 text-slate-300">
+          <p className={`mt-5 max-w-lg text-sm leading-7 ${
+            theme === "dark" ? "text-slate-300" : "text-slate-600"
+          }`}>
             Practice aptitude, coding, and review sessions with adaptive recommendations, coaching-style analytics,
             and fresher-focused test flows.
           </p>
@@ -91,16 +109,25 @@ export default function Auth({ setUser }: AuthProps) {
               ["Actionable analytics", "See why performance changes, not just the score."],
               ["Coding rounds", "Solve structured challenges with visible and hidden tests."],
             ].map(([title, body]) => (
-              <div key={title} className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                <h2 className="text-sm font-semibold text-white">{title}</h2>
-                <p className="mt-2 text-xs leading-6 text-slate-400">{body}</p>
+              <div
+                key={title}
+                className={`rounded-2xl p-4 ${
+                  theme === "dark" ? "border border-white/10 bg-black/20" : "border border-slate-200 bg-white/70"
+                }`}
+              >
+                <h2 className={`text-sm font-semibold ${theme === "dark" ? "text-white" : "text-slate-900"}`}>{title}</h2>
+                <p className={`mt-2 text-xs leading-6 ${theme === "dark" ? "text-slate-400" : "text-slate-600"}`}>{body}</p>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="rounded-[28px] border border-white/8 bg-white/5 p-6 lg:p-8">
-          <div className="mb-6 grid grid-cols-2 rounded-2xl bg-black/20 p-1 text-sm">
+        <div className={`rounded-[28px] p-6 lg:p-8 ${
+          theme === "dark" ? "border border-white/8 bg-white/5" : "border border-slate-200 bg-white"
+        }`}>
+          <div className={`mb-6 grid grid-cols-2 rounded-2xl p-1 text-sm ${
+            theme === "dark" ? "bg-black/20" : "bg-slate-100"
+          }`}>
             {(["login", "register"] as const).map((item) => (
               <button
                 key={item}
@@ -110,7 +137,11 @@ export default function Auth({ setUser }: AuthProps) {
                   setError("");
                 }}
                 className={`rounded-xl px-4 py-3 font-medium capitalize transition ${
-                  tab === item ? "bg-emerald-400 text-slate-950" : "text-slate-300 hover:bg-white/5"
+                  tab === item
+                    ? "bg-emerald-400 text-white"
+                    : theme === "dark"
+                      ? "text-slate-300 hover:bg-white/5"
+                      : "text-slate-700 hover:bg-white"
                 }`}
               >
                 {item}
@@ -121,7 +152,7 @@ export default function Auth({ setUser }: AuthProps) {
           {tab === "login" ? (
             <div className="space-y-4">
               <label className="block">
-                <span className="mb-2 block text-xs uppercase tracking-[0.2em] text-slate-400">Email</span>
+                <span className={`mb-2 block text-xs uppercase tracking-[0.2em] ${theme === "dark" ? "text-slate-400" : "text-slate-500"}`}>Email</span>
                 <input
                   className={inputClass}
                   value={loginForm.email}
@@ -129,7 +160,7 @@ export default function Auth({ setUser }: AuthProps) {
                 />
               </label>
               <label className="block">
-                <span className="mb-2 block text-xs uppercase tracking-[0.2em] text-slate-400">Password</span>
+                <span className={`mb-2 block text-xs uppercase tracking-[0.2em] ${theme === "dark" ? "text-slate-400" : "text-slate-500"}`}>Password</span>
                 <input
                   type="password"
                   className={inputClass}
@@ -149,7 +180,7 @@ export default function Auth({ setUser }: AuthProps) {
           ) : (
             <div className="space-y-4">
               <label className="block">
-                <span className="mb-2 block text-xs uppercase tracking-[0.2em] text-slate-400">Name</span>
+                <span className={`mb-2 block text-xs uppercase tracking-[0.2em] ${theme === "dark" ? "text-slate-400" : "text-slate-500"}`}>Name</span>
                 <input
                   className={inputClass}
                   value={registerForm.name}
@@ -157,7 +188,7 @@ export default function Auth({ setUser }: AuthProps) {
                 />
               </label>
               <label className="block">
-                <span className="mb-2 block text-xs uppercase tracking-[0.2em] text-slate-400">Email</span>
+                <span className={`mb-2 block text-xs uppercase tracking-[0.2em] ${theme === "dark" ? "text-slate-400" : "text-slate-500"}`}>Email</span>
                 <input
                   className={inputClass}
                   value={registerForm.email}
@@ -165,7 +196,7 @@ export default function Auth({ setUser }: AuthProps) {
                 />
               </label>
               <label className="block">
-                <span className="mb-2 block text-xs uppercase tracking-[0.2em] text-slate-400">Phone</span>
+                <span className={`mb-2 block text-xs uppercase tracking-[0.2em] ${theme === "dark" ? "text-slate-400" : "text-slate-500"}`}>Phone</span>
                 <input
                   className={inputClass}
                   value={registerForm.phone}
@@ -173,7 +204,7 @@ export default function Auth({ setUser }: AuthProps) {
                 />
               </label>
               <label className="block">
-                <span className="mb-2 block text-xs uppercase tracking-[0.2em] text-slate-400">Password</span>
+                <span className={`mb-2 block text-xs uppercase tracking-[0.2em] ${theme === "dark" ? "text-slate-400" : "text-slate-500"}`}>Password</span>
                 <input
                   type="password"
                   className={inputClass}
@@ -182,7 +213,7 @@ export default function Auth({ setUser }: AuthProps) {
                 />
               </label>
               <label className="block">
-                <span className="mb-2 block text-xs uppercase tracking-[0.2em] text-slate-400">Confirm Password</span>
+                <span className={`mb-2 block text-xs uppercase tracking-[0.2em] ${theme === "dark" ? "text-slate-400" : "text-slate-500"}`}>Confirm Password</span>
                 <input
                   type="password"
                   className={inputClass}

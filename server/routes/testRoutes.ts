@@ -24,22 +24,31 @@ router.post("/save", verifyToken, async (req: any, res) => {
       skipped
     } = req.body;
 
-    if (!category || typeof score !== "number" || typeof total !== "number") {
+    if (
+      typeof category !== "string" ||
+      typeof topic !== "string" ||
+      typeof difficulty !== "string" ||
+      typeof score !== "number" ||
+      typeof total !== "number" ||
+      score < 0 ||
+      total <= 0 ||
+      score > total
+    ) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
     const safeData = {
       user_id,
-      category,
-      topic,
-      difficulty,
+      category: category.trim(),
+      topic: topic.trim(),
+      difficulty: difficulty.trim(),
       mode: mode === "practice" ? "practice" : "timed",
       score,
       total,
-      answers: Array.isArray(answers) ? answers : [],
-      accuracy: accuracy ?? (total ? score / total : 0),
-      time_taken: time_taken ?? 0,
-      avg_time_per_q: avg_time_per_q ?? 0,
+      answers: Array.isArray(answers) ? answers.slice(0, total) : [],
+      accuracy: typeof accuracy === "number" ? Math.max(0, Math.min(1, accuracy)) : (total ? score / total : 0),
+      time_taken: typeof time_taken === "number" ? Math.max(0, time_taken) : 0,
+      avg_time_per_q: typeof avg_time_per_q === "number" ? Math.max(0, avg_time_per_q) : 0,
       correct_answers: correct_answers ?? score,
       wrong_answers: wrong_answers ?? Math.max(total - score, 0),
       skipped: skipped ?? 0

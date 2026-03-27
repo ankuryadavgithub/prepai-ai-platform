@@ -2,6 +2,7 @@ import Editor from "@monaco-editor/react";
 import type { CodingProblem, CodingSubmissionResult, Difficulty } from "../types";
 
 type CodingViewProps = {
+  theme: "dark" | "light";
   difficulty: Difficulty;
   presetLabel: string;
   submissionCount: number;
@@ -20,6 +21,7 @@ type CodingViewProps = {
 };
 
 export default function CodingView({
+  theme,
   difficulty,
   presetLabel,
   submissionCount,
@@ -103,7 +105,11 @@ export default function CodingView({
 
       {problem && (
         <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-          <div className="rounded-[32px] border border-white/10 bg-[linear-gradient(165deg,rgba(15,23,42,0.96),rgba(2,6,23,0.88))] p-8">
+          <div className={`rounded-[32px] border border-white/10 p-8 ${
+            theme === "dark"
+              ? "bg-[linear-gradient(165deg,rgba(15,23,42,0.96),rgba(2,6,23,0.88))]"
+              : "bg-[linear-gradient(165deg,rgba(255,255,255,0.96),rgba(241,245,249,0.92))]"
+          }`}>
             <p className="text-xs uppercase tracking-[0.3em] text-amber-300/80">Coding Round</p>
             <h2 className="mt-4 font-['Space_Grotesk'] text-3xl font-bold text-white">{problem.title}</h2>
             <p className="mt-5 text-sm leading-7 text-slate-300">{problem.description}</p>

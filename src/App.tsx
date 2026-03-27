@@ -61,6 +61,11 @@ function isPracticeSection(value: string): value is PracticeSection {
 }
 
 export default function App() {
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    if (typeof window === "undefined") return "dark";
+    const storedTheme = window.localStorage.getItem("prepai-theme");
+    return storedTheme === "light" ? "light" : "dark";
+  });
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<AppSection>("dashboard");
@@ -133,6 +138,11 @@ export default function App() {
       setAnalyticsLoading(false);
     }
   }
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem("prepai-theme", theme);
+  }, [theme]);
 
   useEffect(() => {
     async function bootstrapUser() {
@@ -506,7 +516,7 @@ export default function App() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100">
+      <div className={`min-h-screen ${theme === "dark" ? "bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-900"}`}>
         <div className="mx-auto flex min-h-screen max-w-7xl items-center justify-center px-6">
           <div className="rounded-[28px] border border-white/10 bg-white/5 px-6 py-5 text-sm text-slate-300">
             Loading Prep AI...
@@ -518,9 +528,13 @@ export default function App() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,#16301f,transparent_28%),radial-gradient(circle_at_top_right,#4a3412,transparent_24%),#020617] px-6 py-10 text-slate-100">
+      <div className={`min-h-screen px-6 py-10 ${theme === "dark"
+        ? "bg-[radial-gradient(circle_at_top_left,#16301f,transparent_28%),radial-gradient(circle_at_top_right,#4a3412,transparent_24%),#020617] text-slate-100"
+        : "bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_26%),radial-gradient(circle_at_top_right,rgba(251,191,36,0.18),transparent_22%),#f8fafc] text-slate-900"}`}
+      >
         <div className="mx-auto flex min-h-screen max-w-7xl items-center justify-center">
           <Auth
+            theme={theme}
             setUser={async (nextUser) => {
               setUser(nextUser);
               await refreshAnalytics();
@@ -532,7 +546,10 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_22%),radial-gradient(circle_at_top_right,rgba(251,191,36,0.16),transparent_20%),#020617] text-slate-100">
+    <div className={`min-h-screen ${theme === "dark"
+      ? "bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_22%),radial-gradient(circle_at_top_right,rgba(251,191,36,0.16),transparent_20%),#020617] text-slate-100"
+      : "bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.1),transparent_24%),radial-gradient(circle_at_top_right,rgba(251,191,36,0.14),transparent_20%),#f8fafc] text-slate-900"}`}
+    >
       <div className="mx-auto grid min-h-screen max-w-[1600px] gap-6 px-4 py-4 lg:grid-cols-[280px_minmax(0,1fr)]">
         <aside className="rounded-[32px] border border-white/10 bg-slate-950/70 p-6 shadow-[0_20px_80px_rgba(0,0,0,0.35)] backdrop-blur-xl">
           <div className="rounded-[28px] border border-white/10 bg-[linear-gradient(145deg,rgba(16,185,129,0.2),rgba(251,191,36,0.08))] p-5">
@@ -568,6 +585,14 @@ export default function App() {
 
           <button
             type="button"
+            onClick={() => setTheme((current) => current === "dark" ? "light" : "dark")}
+            className="mt-6 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10"
+          >
+            Switch to {theme === "dark" ? "Light" : "Dark"} Mode
+          </button>
+
+          <button
+            type="button"
             onClick={handleLogout}
             className="mt-6 w-full rounded-2xl border border-rose-400/25 bg-rose-400/10 px-4 py-3 text-sm font-medium text-rose-200 transition hover:bg-rose-400/20"
           >
@@ -591,11 +616,12 @@ export default function App() {
           </div>
 
           {activeSection === "dashboard" && (
-            <DashboardView data={dashboard} loading={analyticsLoading} onStartRecommendation={startRecommendedPractice} />
+            <DashboardView theme={theme} data={dashboard} loading={analyticsLoading} onStartRecommendation={startRecommendedPractice} />
           )}
 
           {activeSection === "mock" && (
             <MockView
+              theme={theme}
               tracks={mockTracks}
               activeSession={activeMockSession}
               history={mockHistory}
@@ -608,6 +634,7 @@ export default function App() {
 
           {activeSection === "practice" && (
             <PracticeView
+              theme={theme}
               config={practiceConfig}
               questions={practiceQuestions}
               currentIndex={practiceIndex}
@@ -627,6 +654,7 @@ export default function App() {
 
           {activeSection === "coding" && (
             <CodingView
+              theme={theme}
               difficulty={codingDifficulty}
               presetLabel={codingPresetLabel}
               submissionCount={codingSubmissionCount}
@@ -652,6 +680,7 @@ export default function App() {
 
           {activeSection === "interview" && (
             <InterviewView
+              theme={theme}
               setup={interviewSetup}
               activeSession={activeInterviewSession}
               history={interviewHistory}

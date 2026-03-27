@@ -9,6 +9,7 @@ import { TOPICS } from "../types";
 import { formatPercent } from "../utils/practice";
 
 type PracticeViewProps = {
+  theme: "dark" | "light";
   config: PracticeConfig;
   questions: MCQQuestion[];
   currentIndex: number;
@@ -26,6 +27,7 @@ type PracticeViewProps = {
 };
 
 export default function PracticeView({
+  theme,
   config,
   questions,
   currentIndex,
@@ -119,7 +121,11 @@ export default function PracticeView({
       )}
 
       {!!questions.length && currentQuestion && !feedback && (
-        <div className="rounded-[32px] border border-white/10 bg-[linear-gradient(165deg,rgba(15,23,42,0.96),rgba(2,6,23,0.88))] p-8">
+        <div className={`rounded-[32px] border border-white/10 p-8 ${
+          theme === "dark"
+            ? "bg-[linear-gradient(165deg,rgba(15,23,42,0.96),rgba(2,6,23,0.88))]"
+            : "bg-[linear-gradient(165deg,rgba(255,255,255,0.96),rgba(241,245,249,0.92))]"
+        }`}>
           <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Question {currentIndex + 1} of {questions.length}</p>
