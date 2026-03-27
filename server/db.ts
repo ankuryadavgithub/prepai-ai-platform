@@ -130,6 +130,7 @@ export async function initDatabase() {
       id SERIAL PRIMARY KEY,
       user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
       interview_type VARCHAR(20) NOT NULL,
+      interaction_mode VARCHAR(20) DEFAULT 'text',
       target_role VARCHAR(100) NOT NULL,
       focus_area VARCHAR(120),
       resume_summary TEXT,
@@ -146,6 +147,11 @@ export async function initDatabase() {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       completed_at TIMESTAMP
     )
+  `);
+
+  await pool.query(`
+    ALTER TABLE interview_sessions
+    ADD COLUMN IF NOT EXISTS interaction_mode VARCHAR(20) DEFAULT 'text'
   `);
 
   await pool.query(`

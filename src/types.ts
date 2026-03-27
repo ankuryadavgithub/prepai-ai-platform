@@ -29,6 +29,7 @@ export type Difficulty = "Easy" | "Medium" | "Hard";
 export type PracticeMode = "practice" | "timed";
 export type MockMode = "aptitude" | "coding" | "full";
 export type InterviewType = "HR" | "Technical" | "Panel";
+export type InterviewMode = "text" | "speech";
 
 export interface User {
   id: number;
@@ -329,6 +330,7 @@ export interface MockSession {
 
 export interface InterviewSetup {
   interviewType: InterviewType;
+  interactionMode: InterviewMode;
   targetRole: string;
   focusArea: string;
   resumeSummary: string;
@@ -361,6 +363,7 @@ export interface InterviewTurn {
 export interface InterviewSession {
   id: number;
   interviewType: InterviewType;
+  interactionMode: InterviewMode;
   targetRole: string;
   focusArea?: string | null;
   resumeSummary?: string | null;

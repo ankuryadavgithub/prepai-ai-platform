@@ -33,12 +33,13 @@ router.get("/sessions/history", verifyToken, async (req: any, res) => {
 
 router.post("/sessions/start", verifyToken, async (req: any, res) => {
   try {
-    const { interviewType, targetRole, focusArea, resumeSummary, projects, internships, achievements } = req.body ?? {};
+    const { interviewType, interactionMode, targetRole, focusArea, resumeSummary, projects, internships, achievements } = req.body ?? {};
     if (!interviewType || !targetRole) {
       return res.status(400).json({ error: "interviewType and targetRole are required" });
     }
 
     const session = await createInterviewSession(req.user.id, interviewType as InterviewType, {
+      interactionMode,
       targetRole,
       focusArea,
       resumeSummary,

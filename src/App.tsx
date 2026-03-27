@@ -37,6 +37,7 @@ const defaultPracticeConfig: PracticeConfig = {
 
 const defaultInterviewSetup: InterviewSetup = {
   interviewType: "HR",
+  interactionMode: "text",
   targetRole: "Software Engineer",
   focusArea: "",
   resumeSummary: "",

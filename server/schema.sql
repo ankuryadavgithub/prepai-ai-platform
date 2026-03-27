@@ -99,6 +99,7 @@ CREATE TABLE interview_sessions (
   id SERIAL PRIMARY KEY,
   user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
   interview_type VARCHAR(20) NOT NULL,
+  interaction_mode VARCHAR(20) DEFAULT 'text',
   target_role VARCHAR(100) NOT NULL,
   focus_area VARCHAR(120),
   resume_summary TEXT,

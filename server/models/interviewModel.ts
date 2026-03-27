@@ -1,8 +1,10 @@
 import { pool } from "../db";
 
 export type InterviewType = "HR" | "Technical" | "Panel";
+export type InterviewMode = "text" | "speech";
 
 type CandidateContext = {
+  interactionMode?: InterviewMode;
   targetRole: string;
   focusArea?: string;
   resumeSummary?: string;
@@ -196,14 +198,15 @@ export async function createInterviewSession(userId: number, interviewType: Inte
     const sessionResult = await client.query(
       `
         INSERT INTO interview_sessions (
-          user_id, interview_type, target_role, focus_area, resume_summary, projects, internships, achievements, personas, active_turn
+          user_id, interview_type, interaction_mode, target_role, focus_area, resume_summary, projects, internships, achievements, personas, active_turn
         )
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,1)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,1)
         RETURNING *
       `,
       [
         userId,
         interviewType,
+        context.interactionMode ?? "text",
         context.targetRole,
         context.focusArea ?? null,
         context.resumeSummary ?? null,
@@ -245,6 +248,7 @@ export async function getInterviewSessionById(sessionId: number, userId: number)
   return {
     id: row.id,
     interviewType: row.interview_type,
+    interactionMode: row.interaction_mode,
     targetRole: row.target_role,
     focusArea: row.focus_area,
     resumeSummary: row.resume_summary,
@@ -454,4 +458,3 @@ export async function getInterviewStatsByUser(userId: number) {
   );
   return rows[0] ?? null;
 }
-
