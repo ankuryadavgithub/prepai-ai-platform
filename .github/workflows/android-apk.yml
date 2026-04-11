@@ -96,6 +96,18 @@ jobs:
         working-directory: mobile-app
         run: npx cap add android
 
+      - name: Allow HTTP traffic to laptop backend
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          manifest = Path('mobile-app/android/app/src/main/AndroidManifest.xml')
+          text = manifest.read_text()
+          marker = '<application '
+          if 'android:usesCleartextTraffic="true"' not in text and marker in text:
+              text = text.replace(marker, '<application android:usesCleartextTraffic="true" ', 1)
+          manifest.write_text(text)
+          PY
+
       - name: Sync Capacitor Android project
         working-directory: mobile-app
         run: npx cap sync android
