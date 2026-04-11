@@ -7,6 +7,12 @@
 }
 
 @layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
   html {
     --app-bg:
       radial-gradient(circle at top left, rgba(16, 185, 129, 0.12), transparent 24%),
@@ -121,5 +127,40 @@
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .prepai-shell {
+    gap: 0.75rem;
+    padding: 0.5rem;
+  }
+
+  .prepai-sidebar,
+  .prepai-main {
+    width: 100%;
+    min-width: 0;
+    border-radius: 1.25rem;
+    padding: 0.875rem;
+  }
+
+  .prepai-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: visible;
+    padding-bottom: 0;
+  }
+
+  .prepai-nav-button {
+    width: 100%;
+    min-width: 0;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25rem;
+  }
+
+  .prepai-main-header {
+    flex-direction: column;
+    align-items: stretch;
   }
 }

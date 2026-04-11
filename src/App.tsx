@@ -550,8 +550,8 @@ export default function App() {
       ? "bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_22%),radial-gradient(circle_at_top_right,rgba(251,191,36,0.16),transparent_20%),#020617] text-slate-100"
       : "bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.1),transparent_24%),radial-gradient(circle_at_top_right,rgba(251,191,36,0.14),transparent_20%),#f8fafc] text-slate-900"}`}
     >
-      <div className="mx-auto grid min-h-screen max-w-[1600px] gap-4 px-3 py-3 sm:gap-6 sm:px-4 sm:py-4 lg:grid-cols-[280px_minmax(0,1fr)]">
-        <aside className="rounded-[28px] border border-white/10 bg-slate-950/70 p-4 shadow-[0_20px_80px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:rounded-[32px] sm:p-6">
+      <div className="prepai-shell mx-auto grid min-h-screen max-w-[1600px] gap-4 px-3 py-3 sm:gap-6 sm:px-4 sm:py-4 lg:grid-cols-[280px_minmax(0,1fr)]">
+        <aside className="prepai-sidebar min-w-0 rounded-[28px] border border-white/10 bg-slate-950/70 p-4 shadow-[0_20px_80px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:rounded-[32px] sm:p-6">
           <div className="rounded-[24px] border border-white/10 bg-[linear-gradient(145deg,rgba(16,185,129,0.2),rgba(251,191,36,0.08))] p-4 sm:rounded-[28px] sm:p-5">
             <p className="text-xs uppercase tracking-[0.35em] text-emerald-200/80">Prep AI</p>
             <h1 className="mt-3 font-['Space_Grotesk'] text-2xl font-bold text-white sm:text-3xl">Placement cockpit</h1>
@@ -560,13 +560,13 @@ export default function App() {
             </p>
           </div>
 
-          <div className="scrollbar-hide mt-4 flex gap-2 overflow-x-auto pb-1 lg:mt-6 lg:block lg:space-y-2 lg:overflow-visible lg:pb-0">
+          <div className="prepai-nav scrollbar-hide mt-4 flex gap-2 overflow-x-auto pb-1 lg:mt-6 lg:block lg:space-y-2 lg:overflow-visible lg:pb-0">
             {navigationItems.map((item) => (
               <button
                 key={item.id}
                 type="button"
                 onClick={() => setActiveSection(item.id)}
-                className={`shrink-0 rounded-2xl px-4 py-3 text-left text-sm font-medium whitespace-nowrap transition lg:w-full ${
+                className={`prepai-nav-button shrink-0 rounded-2xl px-4 py-3 text-left text-sm font-medium whitespace-nowrap transition lg:w-full ${
                   activeSection === item.id
                     ? "bg-emerald-400 text-slate-950"
                     : "border border-white/8 bg-white/5 text-slate-300 hover:bg-white/10"
@@ -602,8 +602,8 @@ export default function App() {
           </div>
         </aside>
 
-        <main className="min-w-0 rounded-[30px] border border-white/10 bg-slate-950/55 p-4 shadow-[0_20px_80px_rgba(0,0,0,0.32)] backdrop-blur-xl sm:rounded-[36px] sm:p-6 lg:p-8">
-          <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <main className="prepai-main min-w-0 rounded-[30px] border border-white/10 bg-slate-950/55 p-4 shadow-[0_20px_80px_rgba(0,0,0,0.32)] backdrop-blur-xl sm:rounded-[36px] sm:p-6 lg:p-8">
+          <div className="prepai-main-header mb-6 flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Prep AI workspace</p>
               <h2 className="mt-2 font-['Space_Grotesk'] text-2xl font-bold text-white sm:text-3xl">
