@@ -31,6 +31,60 @@ jobs:
       - name: Install root dependencies
         run: npm ci
 
+      - name: Create mobile wrapper
+        run: |
+          mkdir -p mobile-app
+          cat <<'EOF' > mobile-app/package.json
+          {
+            "name": "prepai-mobile",
+            "private": true,
+            "version": "1.0.0",
+            "type": "module",
+            "scripts": {
+              "build:web": "npm --prefix .. run build",
+              "add:android": "npx cap add android",
+              "sync:android": "npx cap sync android",
+              "open:android": "npx cap open android",
+              "prepare:android": "npm run build:web && npm run sync:android"
+            },
+            "dependencies": {
+              "@capacitor/android": "^7.2.0",
+              "@capacitor/core": "^7.2.0"
+            },
+            "devDependencies": {
+              "@capacitor/cli": "^7.2.0",
+              "typescript": "^5.8.2"
+            }
+          }
+          EOF
+
+          cat <<'EOF' > mobile-app/tsconfig.json
+          {
+            "compilerOptions": {
+              "target": "ES2020",
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "strict": true,
+              "types": ["node"]
+            }
+          }
+          EOF
+
+          cat <<'EOF' > mobile-app/capacitor.config.ts
+          import type { CapacitorConfig } from "@capacitor/cli";
+
+          const config: CapacitorConfig = {
+            appId: "com.prepai.app",
+            appName: "PrepAI",
+            webDir: "../dist",
+            server: {
+              androidScheme: "https"
+            }
+          };
+
+          export default config;
+          EOF
+
       - name: Install mobile dependencies
         working-directory: mobile-app
         run: npm install
