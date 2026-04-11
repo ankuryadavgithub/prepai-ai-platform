@@ -96,12 +96,15 @@ jobs:
         working-directory: mobile-app
         run: npx cap add android
 
-      - name: Allow HTTP traffic to laptop backend
+      - name: Allow Android network access to laptop backend
         run: |
           python - <<'PY'
           from pathlib import Path
           manifest = Path('mobile-app/android/app/src/main/AndroidManifest.xml')
           text = manifest.read_text()
+          if '<uses-permission android:name="android.permission.INTERNET" />' not in text:
+              text = text.replace('<manifest', '<manifest\n    xmlns:android="http://schemas.android.com/apk/res/android"', 1) if 'xmlns:android=' not in text else text
+              text = text.replace('>', '>\n    <uses-permission android:name="android.permission.INTERNET" />', 1)
           marker = '<application '
           if 'android:usesCleartextTraffic="true"' not in text and marker in text:
               text = text.replace(marker, '<application android:usesCleartextTraffic="true" ', 1)
