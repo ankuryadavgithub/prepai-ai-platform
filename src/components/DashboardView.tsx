@@ -20,16 +20,16 @@ export default function DashboardView({ theme, data, loading, onStartRecommendat
   return (
     <div className="space-y-6">
       <div className="grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
-        <div className={`rounded-[30px] border border-white/10 p-8 ${
+        <div className={`rounded-[26px] border border-white/10 p-5 sm:rounded-[30px] sm:p-8 ${
           theme === "dark"
             ? "bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.18),transparent_42%),linear-gradient(160deg,rgba(15,23,42,0.96),rgba(2,6,23,0.88))]"
             : "bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.18),transparent_42%),linear-gradient(160deg,rgba(255,255,255,0.96),rgba(248,250,252,0.92))]"
         }`}>
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-amber-300/80">Recommended Next Step</p>
-          <h2 className="mt-4 font-['Space_Grotesk'] text-3xl font-bold capitalize text-white">
+          <h2 className="mt-4 font-['Space_Grotesk'] text-2xl font-bold capitalize text-white sm:text-3xl">
             {data.recommendation.section} {data.recommendation.mode} session
           </h2>
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300">{data.recommendation.reason}</p>
+          <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-300 sm:leading-7">{data.recommendation.reason}</p>
           <div className="mt-6 flex flex-wrap gap-3 text-xs text-slate-200">
             <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
               Topic: {data.recommendation.topic || "Mixed focus"}
@@ -66,7 +66,7 @@ export default function DashboardView({ theme, data, loading, onStartRecommendat
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+        <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 sm:p-6">
           <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Readiness board</h3>
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             {[
@@ -87,7 +87,7 @@ export default function DashboardView({ theme, data, loading, onStartRecommendat
           </div>
         </div>
 
-        <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+        <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 sm:p-6">
           <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Coach insights</h3>
           <div className="mt-5 space-y-3">
             {data.insights.length ? data.insights.map((insight) => (
@@ -102,7 +102,7 @@ export default function DashboardView({ theme, data, loading, onStartRecommendat
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+        <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 sm:p-6">
           <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Weak topics to revisit</h3>
           <div className="mt-5 flex flex-wrap gap-3">
             {data.weakTopics.length ? data.weakTopics.map((topic) => (
@@ -115,7 +115,7 @@ export default function DashboardView({ theme, data, loading, onStartRecommendat
           </div>
         </div>
 
-        <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+        <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 sm:p-6">
           <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Momentum</h3>
           <div className="mt-5 space-y-3">
             {data.milestones.length ? data.milestones.map((milestone) => (
@@ -129,7 +129,7 @@ export default function DashboardView({ theme, data, loading, onStartRecommendat
         </div>
       </div>
 
-      <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+      <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 sm:p-6">
         <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Latest test summary</h3>
         {data.latestSummary ? (
           <div className="mt-5 grid gap-4 md:grid-cols-4">

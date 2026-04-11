@@ -517,8 +517,8 @@ export default function App() {
   if (authLoading) {
     return (
       <div className={`min-h-screen ${theme === "dark" ? "bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-900"}`}>
-        <div className="mx-auto flex min-h-screen max-w-7xl items-center justify-center px-6">
-          <div className="rounded-[28px] border border-white/10 bg-white/5 px-6 py-5 text-sm text-slate-300">
+        <div className="mx-auto flex min-h-screen max-w-7xl items-center justify-center px-4 sm:px-6">
+          <div className="rounded-[28px] border border-white/10 bg-white/5 px-5 py-4 text-sm text-slate-300 sm:px-6 sm:py-5">
             Loading Prep AI...
           </div>
         </div>
@@ -528,7 +528,7 @@ export default function App() {
 
   if (!user) {
     return (
-      <div className={`min-h-screen px-6 py-10 ${theme === "dark"
+      <div className={`min-h-screen px-4 py-6 sm:px-6 sm:py-10 ${theme === "dark"
         ? "bg-[radial-gradient(circle_at_top_left,#16301f,transparent_28%),radial-gradient(circle_at_top_right,#4a3412,transparent_24%),#020617] text-slate-100"
         : "bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_26%),radial-gradient(circle_at_top_right,rgba(251,191,36,0.18),transparent_22%),#f8fafc] text-slate-900"}`}
       >
@@ -550,23 +550,23 @@ export default function App() {
       ? "bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_22%),radial-gradient(circle_at_top_right,rgba(251,191,36,0.16),transparent_20%),#020617] text-slate-100"
       : "bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.1),transparent_24%),radial-gradient(circle_at_top_right,rgba(251,191,36,0.14),transparent_20%),#f8fafc] text-slate-900"}`}
     >
-      <div className="mx-auto grid min-h-screen max-w-[1600px] gap-6 px-4 py-4 lg:grid-cols-[280px_minmax(0,1fr)]">
-        <aside className="rounded-[32px] border border-white/10 bg-slate-950/70 p-6 shadow-[0_20px_80px_rgba(0,0,0,0.35)] backdrop-blur-xl">
-          <div className="rounded-[28px] border border-white/10 bg-[linear-gradient(145deg,rgba(16,185,129,0.2),rgba(251,191,36,0.08))] p-5">
+      <div className="mx-auto grid min-h-screen max-w-[1600px] gap-4 px-3 py-3 sm:gap-6 sm:px-4 sm:py-4 lg:grid-cols-[280px_minmax(0,1fr)]">
+        <aside className="rounded-[28px] border border-white/10 bg-slate-950/70 p-4 shadow-[0_20px_80px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:rounded-[32px] sm:p-6">
+          <div className="rounded-[24px] border border-white/10 bg-[linear-gradient(145deg,rgba(16,185,129,0.2),rgba(251,191,36,0.08))] p-4 sm:rounded-[28px] sm:p-5">
             <p className="text-xs uppercase tracking-[0.35em] text-emerald-200/80">Prep AI</p>
-            <h1 className="mt-3 font-['Space_Grotesk'] text-3xl font-bold text-white">Placement cockpit</h1>
-            <p className="mt-3 text-sm leading-7 text-slate-300">
+            <h1 className="mt-3 font-['Space_Grotesk'] text-2xl font-bold text-white sm:text-3xl">Placement cockpit</h1>
+            <p className="mt-3 text-sm leading-6 text-slate-300 sm:leading-7">
               Adaptive mock tracks, interview simulation, and readiness signals for fresher placement prep.
             </p>
           </div>
 
-          <div className="mt-6 space-y-2">
+          <div className="scrollbar-hide mt-4 flex gap-2 overflow-x-auto pb-1 lg:mt-6 lg:block lg:space-y-2 lg:overflow-visible lg:pb-0">
             {navigationItems.map((item) => (
               <button
                 key={item.id}
                 type="button"
                 onClick={() => setActiveSection(item.id)}
-                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-medium transition ${
+                className={`shrink-0 rounded-2xl px-4 py-3 text-left text-sm font-medium whitespace-nowrap transition lg:w-full ${
                   activeSection === item.id
                     ? "bg-emerald-400 text-slate-950"
                     : "border border-white/8 bg-white/5 text-slate-300 hover:bg-white/10"
@@ -577,39 +577,41 @@ export default function App() {
             ))}
           </div>
 
-          <div className="mt-6 rounded-[24px] border border-white/10 bg-white/5 p-5">
+          <div className="mt-4 rounded-[22px] border border-white/10 bg-white/5 p-4 sm:mt-6 sm:rounded-[24px] sm:p-5">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Signed in</p>
             <p className="mt-2 text-lg font-medium text-white">{user.name}</p>
             <p className="mt-1 text-sm text-slate-400">{user.email}</p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setTheme((current) => current === "dark" ? "light" : "dark")}
-            className="mt-6 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10"
-          >
-            Switch to {theme === "dark" ? "Light" : "Dark"} Mode
-          </button>
+          <div className="mt-4 grid gap-3 sm:mt-6">
+            <button
+              type="button"
+              onClick={() => setTheme((current) => current === "dark" ? "light" : "dark")}
+              className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10"
+            >
+              Switch to {theme === "dark" ? "Light" : "Dark"} Mode
+            </button>
 
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="mt-6 w-full rounded-2xl border border-rose-400/25 bg-rose-400/10 px-4 py-3 text-sm font-medium text-rose-200 transition hover:bg-rose-400/20"
-          >
-            Logout
-          </button>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="w-full rounded-2xl border border-rose-400/25 bg-rose-400/10 px-4 py-3 text-sm font-medium text-rose-200 transition hover:bg-rose-400/20"
+            >
+              Logout
+            </button>
+          </div>
         </aside>
 
-        <main className="rounded-[36px] border border-white/10 bg-slate-950/55 p-6 shadow-[0_20px_80px_rgba(0,0,0,0.32)] backdrop-blur-xl lg:p-8">
-          <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <main className="min-w-0 rounded-[30px] border border-white/10 bg-slate-950/55 p-4 shadow-[0_20px_80px_rgba(0,0,0,0.32)] backdrop-blur-xl sm:rounded-[36px] sm:p-6 lg:p-8">
+          <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Prep AI workspace</p>
-              <h2 className="mt-2 font-['Space_Grotesk'] text-3xl font-bold text-white">
+              <h2 className="mt-2 font-['Space_Grotesk'] text-2xl font-bold text-white sm:text-3xl">
                 {navigationItems.find((item) => item.id === activeSection)?.label}
               </h2>
             </div>
             {dashboard?.recommendation && (
-              <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-300">
+              <div className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-300 sm:w-auto">
                 Next: <span className="font-semibold text-white">{dashboard.nextRecommendedTrack.label}</span>
               </div>
             )}

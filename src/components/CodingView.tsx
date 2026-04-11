@@ -40,7 +40,7 @@ export default function CodingView({
 }: CodingViewProps) {
   return (
     <div className="space-y-6">
-      <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+      <div className="rounded-[28px] border border-white/10 bg-white/5 p-4 sm:p-6">
         <div className="mb-4 grid gap-4 md:grid-cols-3">
           {[
             ["Preset", presetLabel],
@@ -53,7 +53,7 @@ export default function CodingView({
             </div>
           ))}
         </div>
-        <div className="grid gap-4 lg:grid-cols-[220px_220px_auto_auto]">
+        <div className="grid gap-3 sm:gap-4 lg:grid-cols-[220px_220px_auto_auto]">
           <select
             value={difficulty}
             onChange={(event) => onDifficultyChange(event.target.value as Difficulty)}
@@ -98,21 +98,21 @@ export default function CodingView({
       </div>
 
       {!problem && (
-        <div className="rounded-[28px] border border-dashed border-white/10 bg-black/20 p-10 text-center text-slate-400">
+        <div className="rounded-[28px] border border-dashed border-white/10 bg-black/20 p-6 text-center text-slate-400 sm:p-10">
           Generate a coding challenge to start a structured interview-style round with visible and hidden tests.
         </div>
       )}
 
       {problem && (
         <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-          <div className={`rounded-[32px] border border-white/10 p-8 ${
+          <div className={`rounded-[28px] border border-white/10 p-5 sm:rounded-[32px] sm:p-8 ${
             theme === "dark"
               ? "bg-[linear-gradient(165deg,rgba(15,23,42,0.96),rgba(2,6,23,0.88))]"
               : "bg-[linear-gradient(165deg,rgba(255,255,255,0.96),rgba(241,245,249,0.92))]"
           }`}>
             <p className="text-xs uppercase tracking-[0.3em] text-amber-300/80">Coding Round</p>
-            <h2 className="mt-4 font-['Space_Grotesk'] text-3xl font-bold text-white">{problem.title}</h2>
-            <p className="mt-5 text-sm leading-7 text-slate-300">{problem.description}</p>
+            <h2 className="mt-4 font-['Space_Grotesk'] text-2xl font-bold text-white sm:text-3xl">{problem.title}</h2>
+            <p className="mt-5 text-sm leading-6 text-slate-300 sm:leading-7">{problem.description}</p>
 
             <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-5">
               <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Constraints</p>
@@ -147,10 +147,10 @@ export default function CodingView({
             </div>
           </div>
 
-          <div className="rounded-[32px] border border-white/10 bg-white/5 p-4">
-            <div className="rounded-[28px] border border-white/8 bg-slate-950/80 p-3">
+          <div className="min-w-0 rounded-[28px] border border-white/10 bg-white/5 p-3 sm:rounded-[32px] sm:p-4">
+            <div className="overflow-hidden rounded-[24px] border border-white/8 bg-slate-950/80 p-2 sm:rounded-[28px] sm:p-3">
               <Editor
-                height="560px"
+                height="420px"
                 theme="vs-dark"
                 language={language}
                 value={code}
@@ -160,6 +160,7 @@ export default function CodingView({
                   minimap: { enabled: false },
                   padding: { top: 16 },
                   scrollBeyondLastLine: false,
+                  wordWrap: "on",
                 }}
               />
             </div>

@@ -32,7 +32,7 @@ export default function AnalyticsView({ data, loading }: AnalyticsViewProps) {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+        <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 sm:p-6">
           <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Section performance</h3>
           <div className="mt-5 space-y-4">
             {data.sections.map((section) => (
@@ -52,7 +52,7 @@ export default function AnalyticsView({ data, loading }: AnalyticsViewProps) {
           </div>
         </div>
 
-        <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+        <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 sm:p-6">
           <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Topic mastery</h3>
           <div className="mt-5 grid gap-3">
             {data.topicMastery.length ? data.topicMastery.map((topic) => (
@@ -73,7 +73,7 @@ export default function AnalyticsView({ data, loading }: AnalyticsViewProps) {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-        <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+        <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 sm:p-6">
           <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Difficulty breakdown</h3>
           <div className="mt-5 space-y-3">
             {data.difficultyBreakdown.map((item) => (
@@ -90,7 +90,7 @@ export default function AnalyticsView({ data, loading }: AnalyticsViewProps) {
           </div>
         </div>
 
-        <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+        <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 sm:p-6">
           <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Recent attempts</h3>
           <div className="mt-5 space-y-3">
             {data.recentAttempts.map((attempt, index) => (
@@ -109,7 +109,7 @@ export default function AnalyticsView({ data, loading }: AnalyticsViewProps) {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-        <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+        <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 sm:p-6">
           <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Readiness mix</h3>
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             {[
@@ -132,7 +132,7 @@ export default function AnalyticsView({ data, loading }: AnalyticsViewProps) {
           <p className="mt-4 text-sm leading-7 text-slate-300">{data.nextRecommendedTrack.reason}</p>
         </div>
 
-        <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+        <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 sm:p-6">
           <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Improvement insights</h3>
           <div className="mt-5 space-y-3">
             {data.insights.map((insight) => (
@@ -143,7 +143,7 @@ export default function AnalyticsView({ data, loading }: AnalyticsViewProps) {
           </div>
         </div>
 
-        <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+        <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 sm:p-6">
           <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Coding analytics</h3>
           <div className="mt-5 grid gap-4 md:grid-cols-3">
             {[
@@ -174,7 +174,7 @@ export default function AnalyticsView({ data, loading }: AnalyticsViewProps) {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-        <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+        <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 sm:p-6">
           <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Recent mock outcomes</h3>
           <div className="mt-5 space-y-3">
             {data.recentMocks.length ? data.recentMocks.map((mock, index) => (

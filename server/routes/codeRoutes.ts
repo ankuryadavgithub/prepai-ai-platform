@@ -9,6 +9,7 @@ import { randomUUID } from "crypto";
 import { verifyToken } from "../middleware/authMiddleware.js";
 import { createRateLimit } from "../middleware/rateLimit.js";
 import { saveCodingSubmission } from "../models/testModel.js";
+import { getGroqApiKey } from "../utils/aiConfig.js";
 
 const router = express.Router();
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
@@ -47,7 +48,7 @@ function sweepExpiredProblems() {
 }
 
 async function callGroq(prompt: string) {
-  const apiKey = process.env.GROQ_API_KEY;
+  const apiKey = getGroqApiKey();
 
   if (!apiKey) {
     throw new Error("Missing AI API key");

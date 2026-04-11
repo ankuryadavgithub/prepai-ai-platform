@@ -76,13 +76,13 @@ export default function Auth({ theme, setUser }: AuthProps) {
   }
 
   return (
-    <div className={`mx-auto w-full max-w-5xl rounded-[32px] p-6 shadow-[0_30px_120px_rgba(0,0,0,0.18)] backdrop-blur-xl lg:p-8 ${
+    <div className={`mx-auto w-full max-w-5xl rounded-[28px] p-4 shadow-[0_30px_120px_rgba(0,0,0,0.18)] backdrop-blur-xl sm:rounded-[32px] sm:p-6 lg:p-8 ${
       theme === "dark"
         ? "border border-white/10 bg-slate-950/70"
         : "border border-slate-200 bg-white/80"
     }`}>
-      <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-        <div className={`rounded-[28px] p-8 ${
+      <div className="grid gap-6 sm:gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className={`rounded-[24px] p-5 sm:rounded-[28px] sm:p-8 ${
           theme === "dark"
             ? "border border-white/8 bg-[radial-gradient(circle_at_top_left,rgba(52,211,153,0.22),transparent_42%),linear-gradient(160deg,rgba(15,23,42,0.96),rgba(2,6,23,0.92))]"
             : "border border-slate-200 bg-[radial-gradient(circle_at_top_left,rgba(52,211,153,0.16),transparent_42%),linear-gradient(160deg,rgba(255,255,255,0.98),rgba(241,245,249,0.94))]"
@@ -92,7 +92,7 @@ export default function Auth({ theme, setUser }: AuthProps) {
           }`}>
             Prep AI
           </p>
-          <h1 className={`max-w-xl font-['Space_Grotesk'] text-4xl font-bold leading-tight lg:text-5xl ${
+          <h1 className={`max-w-xl font-['Space_Grotesk'] text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl ${
             theme === "dark" ? "text-white" : "text-slate-900"
           }`}>
             Placement prep that reacts to how the learner actually performs.
@@ -122,7 +122,7 @@ export default function Auth({ theme, setUser }: AuthProps) {
           </div>
         </div>
 
-        <div className={`rounded-[28px] p-6 lg:p-8 ${
+        <div className={`rounded-[24px] p-5 sm:rounded-[28px] sm:p-6 lg:p-8 ${
           theme === "dark" ? "border border-white/8 bg-white/5" : "border border-slate-200 bg-white"
         }`}>
           <div className={`mb-6 grid grid-cols-2 rounded-2xl p-1 text-sm ${

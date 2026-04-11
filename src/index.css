@@ -30,11 +30,13 @@
     min-height: 100vh;
     background: var(--app-bg);
     color: var(--app-text);
+    overflow-x: hidden;
     transition: background 180ms ease, color 180ms ease;
   }
 
   #root {
     min-height: 100vh;
+    overflow-x: hidden;
   }
 
   html[data-theme="light"] .bg-slate-950,

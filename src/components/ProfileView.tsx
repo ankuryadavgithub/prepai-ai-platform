@@ -10,9 +10,9 @@ type ProfileViewProps = {
 export default function ProfileView({ user, analytics, onLogout }: ProfileViewProps) {
   return (
     <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
-      <div className="rounded-[28px] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(52,211,153,0.16),transparent_42%),linear-gradient(160deg,rgba(15,23,42,0.96),rgba(2,6,23,0.88))] p-8">
+      <div className="rounded-[28px] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(52,211,153,0.16),transparent_42%),linear-gradient(160deg,rgba(15,23,42,0.96),rgba(2,6,23,0.88))] p-5 sm:p-8">
         <p className="text-xs uppercase tracking-[0.3em] text-emerald-300/80">Profile</p>
-        <h2 className="mt-4 font-['Space_Grotesk'] text-3xl font-bold text-white">{user.name}</h2>
+        <h2 className="mt-4 font-['Space_Grotesk'] text-2xl font-bold text-white sm:text-3xl">{user.name}</h2>
         <p className="mt-2 text-sm text-slate-300">{user.email}</p>
         {user.phone && <p className="mt-1 text-sm text-slate-400">{user.phone}</p>}
         <div className="mt-8 rounded-2xl border border-white/10 bg-black/20 p-5">
@@ -31,7 +31,7 @@ export default function ProfileView({ user, analytics, onLogout }: ProfileViewPr
       </div>
 
       <div className="space-y-6">
-        <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+        <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 sm:p-6">
           <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Learning snapshot</h3>
           <div className="mt-5 grid gap-4 md:grid-cols-3">
             {[
@@ -47,7 +47,7 @@ export default function ProfileView({ user, analytics, onLogout }: ProfileViewPr
           </div>
         </div>
 
-        <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+        <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 sm:p-6">
           <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Recommended focus</h3>
           {analytics ? (
             <div className="mt-5 rounded-2xl border border-white/8 bg-black/20 p-5 text-sm leading-7 text-slate-300">

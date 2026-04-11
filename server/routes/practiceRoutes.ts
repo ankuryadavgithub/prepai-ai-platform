@@ -1,6 +1,7 @@
 import express from "express";
 import axios from "axios";
 import { createRateLimit } from "../middleware/rateLimit.js";
+import { getGroqApiKey } from "../utils/aiConfig.js";
 
 const router = express.Router();
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
@@ -53,7 +54,7 @@ function parseQuestionArray(content: string) {
 }
 
 async function callGroq(prompt: string) {
-  const apiKey = process.env.GROQ_API_KEY;
+  const apiKey = getGroqApiKey();
 
   if (!apiKey) {
     throw new Error("Missing AI API key");

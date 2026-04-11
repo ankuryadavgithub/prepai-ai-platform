@@ -19,8 +19,22 @@ async function startServer() {
 
   const app = express();
   const PORT = 3000;
+  const HOST = "0.0.0.0";
 
   await initDatabase();
+
+  app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+    res.header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+
+    if (req.method === "OPTIONS") {
+      res.sendStatus(204);
+      return;
+    }
+
+    next();
+  });
 
   app.use(express.json({ limit: "1mb" }));
   app.use("/api/auth", authRoutes);
@@ -38,8 +52,8 @@ async function startServer() {
 
   app.use(vite.middlewares);
 
-  app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+  app.listen(PORT, HOST, () => {
+    console.log(`Server running on http://${HOST}:${PORT}`);
   });
 }
 

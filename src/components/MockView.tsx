@@ -28,15 +28,15 @@ export default function MockView({
 
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
         <div
-          className={`rounded-[30px] border border-white/10 p-8 ${
+          className={`rounded-[26px] border border-white/10 p-5 sm:rounded-[30px] sm:p-8 ${
             theme === "dark"
               ? "bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_36%),linear-gradient(160deg,rgba(15,23,42,0.96),rgba(2,6,23,0.88))]"
               : "bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_36%),linear-gradient(160deg,rgba(255,255,255,0.96),rgba(241,245,249,0.92))]"
           }`}
         >
           <p className="text-xs uppercase tracking-[0.3em] text-emerald-300/70">Mock Tracks</p>
-          <h2 className="mt-4 font-['Space_Grotesk'] text-3xl font-bold text-white">Company-style readiness tracks</h2>
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300">
+          <h2 className="mt-4 font-['Space_Grotesk'] text-2xl font-bold text-white sm:text-3xl">Company-style readiness tracks</h2>
+          <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-300 sm:leading-7">
             Use fixed round sequences with cutoffs, timers, and follow-up actions instead of isolated topic drills.
           </p>
 
@@ -82,7 +82,7 @@ export default function MockView({
         </div>
 
         <div className="space-y-6">
-          <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+          <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 sm:p-6">
             <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Active mock session</h3>
             {!activeSession ? (
               <p className="mt-4 text-sm text-slate-400">No active mock. Start one of the tracks to guide your next practice or coding round.</p>
@@ -124,7 +124,7 @@ export default function MockView({
             )}
           </div>
 
-          <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+          <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 sm:p-6">
             <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Recent mock outcomes</h3>
             <div className="mt-5 space-y-3">
               {history.length ? history.map((session) => (

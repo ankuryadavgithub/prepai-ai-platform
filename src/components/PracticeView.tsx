@@ -48,8 +48,8 @@ export default function PracticeView({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
-        <div className="grid gap-4 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto]">
+      <div className="rounded-[28px] border border-white/10 bg-white/5 p-4 sm:p-6">
+        <div className="grid gap-3 sm:gap-4 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto]">
           <select
             value={config.section}
             onChange={(event) => {
@@ -115,13 +115,13 @@ export default function PracticeView({
       </div>
 
       {!questions.length && !feedback && (
-        <div className="rounded-[28px] border border-dashed border-white/10 bg-black/20 p-10 text-center text-slate-400">
+        <div className="rounded-[28px] border border-dashed border-white/10 bg-black/20 p-6 text-center text-slate-400 sm:p-10">
           Pick a topic, difficulty, and mode. Practice mode is untimed; timed mode simulates placement-test pressure.
         </div>
       )}
 
       {!!questions.length && currentQuestion && !feedback && (
-        <div className={`rounded-[32px] border border-white/10 p-8 ${
+        <div className={`rounded-[28px] border border-white/10 p-5 sm:rounded-[32px] sm:p-8 ${
           theme === "dark"
             ? "bg-[linear-gradient(165deg,rgba(15,23,42,0.96),rgba(2,6,23,0.88))]"
             : "bg-[linear-gradient(165deg,rgba(255,255,255,0.96),rgba(241,245,249,0.92))]"
@@ -129,7 +129,7 @@ export default function PracticeView({
           <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Question {currentIndex + 1} of {questions.length}</p>
-              <h2 className="mt-3 max-w-3xl text-xl leading-8 text-white">{currentQuestion.question}</h2>
+              <h2 className="mt-3 max-w-3xl text-lg leading-7 text-white sm:text-xl sm:leading-8">{currentQuestion.question}</h2>
             </div>
             {timeLeft !== null && (
               <div className="rounded-full border border-amber-300/20 bg-amber-300/10 px-4 py-2 text-sm font-medium text-amber-200">
@@ -144,7 +144,7 @@ export default function PracticeView({
                 key={option}
                 type="button"
                 onClick={() => onSelectAnswer(option)}
-                className={`rounded-2xl border px-5 py-4 text-left text-sm transition ${
+                className={`rounded-2xl border px-4 py-4 text-left text-sm transition sm:px-5 ${
                   answers[currentIndex] === option
                     ? "border-emerald-300/60 bg-emerald-300/10 text-white"
                     : "border-white/8 bg-white/5 text-slate-300 hover:border-white/20"
@@ -187,7 +187,7 @@ export default function PracticeView({
 
       {feedback && (
         <div className="space-y-6">
-          <div className="rounded-[32px] border border-white/10 bg-white/5 p-8">
+          <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 sm:rounded-[32px] sm:p-8">
             <p className="text-xs uppercase tracking-[0.3em] text-emerald-300/70">Session Review</p>
             <div className="mt-5 grid gap-4 md:grid-cols-4">
               {[
@@ -231,7 +231,7 @@ export default function PracticeView({
             </button>
           </div>
 
-          <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+          <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 sm:p-6">
             <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Answer review</h3>
             <div className="mt-5 space-y-4">
               {questions.map((question, index) => {

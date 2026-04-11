@@ -156,14 +156,14 @@ export default function InterviewView({
       )}
 
       <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-        <div className={`rounded-[30px] border border-white/10 p-8 ${
+        <div className={`rounded-[26px] border border-white/10 p-5 sm:rounded-[30px] sm:p-8 ${
           theme === "dark"
             ? "bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.16),transparent_35%),linear-gradient(160deg,rgba(15,23,42,0.96),rgba(2,6,23,0.88))]"
             : "bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.14),transparent_35%),linear-gradient(160deg,rgba(255,255,255,0.96),rgba(241,245,249,0.92))]"
         }`}>
           <p className="text-xs uppercase tracking-[0.3em] text-amber-300/70">Interview Setup</p>
-          <h2 className="mt-4 font-['Space_Grotesk'] text-3xl font-bold text-white">Text or speech interview simulation</h2>
-          <p className="mt-4 text-sm leading-7 text-slate-300">
+          <h2 className="mt-4 font-['Space_Grotesk'] text-2xl font-bold text-white sm:text-3xl">Text or speech interview simulation</h2>
+          <p className="mt-4 text-sm leading-6 text-slate-300 sm:leading-7">
             Run the same adaptive interview flow in typed mode or spoken mode with interviewer voice playback.
           </p>
 
@@ -254,7 +254,7 @@ export default function InterviewView({
         </div>
 
         <div className="space-y-6">
-          <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+          <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 sm:p-6">
             <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Live interview room</h3>
             {!activeSession || !currentTurn ? (
               <p className="mt-4 text-sm text-slate-400">No active interview. Start an HR, Technical, or Panel round to open the transcript.</p>
@@ -336,7 +336,7 @@ export default function InterviewView({
             )}
           </div>
 
-          <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+          <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 sm:p-6">
             <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Transcript and review</h3>
             <div className="mt-5 space-y-4">
               {activeSession?.transcript.length ? activeSession.transcript.map((turn) => (
@@ -360,7 +360,7 @@ export default function InterviewView({
         </div>
       </div>
 
-      <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+      <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 sm:p-6">
         <h3 className="font-['Space_Grotesk'] text-xl font-semibold text-white">Recent interview outcomes</h3>
         <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {history.length ? history.map((session) => (

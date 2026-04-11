@@ -14,6 +14,12 @@ import type {
   User,
 } from "../types";
 
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
+
+function buildUrl(path: string) {
+  return `${API_BASE_URL}${path}`;
+}
+
 async function request<T>(url: string, init?: RequestInit, authenticated = false): Promise<T> {
   const headers = new Headers(init?.headers);
 
@@ -43,80 +49,80 @@ async function request<T>(url: string, init?: RequestInit, authenticated = false
 
 export const authApi = {
   login: (payload: { email: string; password: string }) =>
-    request<{ token: string; user: User }>("/api/auth/login", {
+    request<{ token: string; user: User }>(buildUrl("/api/auth/login"), {
       method: "POST",
       body: JSON.stringify(payload),
     }),
   register: (payload: { name: string; email: string; phone: string; password: string }) =>
-    request<{ message: string; user: User }>("/api/auth/register", {
+    request<{ message: string; user: User }>(buildUrl("/api/auth/register"), {
       method: "POST",
       body: JSON.stringify(payload),
     }),
-  me: () => request<{ user: User }>("/api/auth/me", undefined, true),
+  me: () => request<{ user: User }>(buildUrl("/api/auth/me"), undefined, true),
 };
 
 export const practiceApi = {
   generateMCQ: (payload: { category: string; topic: string; difficulty: Difficulty; mode: PracticeMode }) =>
-    request<MCQQuestion[]>("/api/practice/mcq", {
+    request<MCQQuestion[]>(buildUrl("/api/practice/mcq"), {
       method: "POST",
       body: JSON.stringify(payload),
     }),
   saveTest: (payload: unknown) =>
-    request<{ success: boolean }>("/api/test/save", {
+    request<{ success: boolean }>(buildUrl("/api/test/save"), {
       method: "POST",
       body: JSON.stringify(payload),
     }, true),
 };
 
 export const analyticsApi = {
-  dashboard: () => request<DashboardData>("/api/analytics/dashboard", undefined, true),
-  full: () => request<AnalyticsData>("/api/analytics/user", undefined, true),
+  dashboard: () => request<DashboardData>(buildUrl("/api/analytics/dashboard"), undefined, true),
+  full: () => request<AnalyticsData>(buildUrl("/api/analytics/user"), undefined, true),
 };
 
 export const codingApi = {
   generateProblem: (difficulty: Difficulty) =>
-    request<CodingProblem>("/api/code/problem", {
+    request<CodingProblem>(buildUrl("/api/code/problem"), {
       method: "POST",
       body: JSON.stringify({ difficulty }),
     }, true),
   submit: (payload: { problemId: string; code: string; language: string; solveTime: number }) =>
-    request<CodingSubmissionResult>("/api/code/submit", {
+    request<CodingSubmissionResult>(buildUrl("/api/code/submit"), {
       method: "POST",
       body: JSON.stringify(payload),
     }, true),
 };
 
 export const mockApi = {
-  tracks: () => request<MockTrack[]>("/api/mock/tracks", undefined, true),
-  active: () => request<{ session: MockSession | null }>("/api/mock/sessions/active", undefined, true),
-  history: () => request<{ sessions: MockSession[] }>("/api/mock/sessions/history", undefined, true),
+  tracks: () => request<MockTrack[]>(buildUrl("/api/mock/tracks"), undefined, true),
+  active: () => request<{ session: MockSession | null }>(buildUrl("/api/mock/sessions/active"), undefined, true),
+  history: () => request<{ sessions: MockSession[] }>(buildUrl("/api/mock/sessions/history"), undefined, true),
   start: (payload: { trackId: string; mode: MockMode }) =>
-    request<{ session: MockSession }>("/api/mock/sessions/start", {
+    request<{ session: MockSession }>(buildUrl("/api/mock/sessions/start"), {
       method: "POST",
       body: JSON.stringify(payload),
     }, true),
   completeRound: (sessionId: number, roundKey: string, payload: { score: number; maxScore?: number; accuracy?: number; summary?: string }) =>
-    request<{ session: MockSession }>(`/api/mock/sessions/${sessionId}/rounds/${roundKey}/complete`, {
+    request<{ session: MockSession }>(buildUrl(`/api/mock/sessions/${sessionId}/rounds/${roundKey}/complete`), {
       method: "POST",
       body: JSON.stringify(payload),
     }, true),
 };
 
 export const interviewApi = {
-  active: () => request<{ session: InterviewSession | null }>("/api/interview/sessions/active", undefined, true),
-  history: () => request<{ sessions: InterviewSession[] }>("/api/interview/sessions/history", undefined, true),
+  active: () => request<{ session: InterviewSession | null }>(buildUrl("/api/interview/sessions/active"), undefined, true),
+  history: () => request<{ sessions: InterviewSession[] }>(buildUrl("/api/interview/sessions/history"), undefined, true),
   start: (payload: InterviewSetup) =>
-    request<{ session: InterviewSession }>("/api/interview/sessions/start", {
+    request<{ session: InterviewSession }>(buildUrl("/api/interview/sessions/start"), {
       method: "POST",
       body: JSON.stringify(payload),
     }, true),
   answer: (sessionId: number, payload: { answer: string; responseTime: number }) =>
-    request<{ session: InterviewSession; completed: boolean; answerFeedback: string }>(`/api/interview/sessions/${sessionId}/answer`, {
+    request<{ session: InterviewSession; completed: boolean; answerFeedback: string }>(buildUrl(`/api/interview/sessions/${sessionId}/answer`), {
       method: "POST",
       body: JSON.stringify(payload),
     }, true),
   finish: (sessionId: number) =>
-    request<{ session: InterviewSession }>(`/api/interview/sessions/${sessionId}/finish`, {
+    request<{ session: InterviewSession }>(buildUrl(`/api/interview/sessions/${sessionId}/finish`), {
       method: "POST",
     }, true),
 };
